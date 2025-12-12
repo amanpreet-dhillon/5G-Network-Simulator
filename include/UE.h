@@ -9,7 +9,7 @@ class gNB;
 
 class UE : public Node {
     public:
-        UE();
+        UE(int, int, int);
         ~UE();
         void recievePacket(const Packet&);
         void sendPacket();
