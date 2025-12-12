@@ -1,7 +1,7 @@
 #ifndef CORENETWORK_H
 #define CORENETWORK_H
 
-#include <Packet.h>
+#include "Packet.h"
 #include <queue>
 
 class CoreNetwork {
