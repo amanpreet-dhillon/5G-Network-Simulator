@@ -7,11 +7,11 @@
 class Node {
 
     public:
-        Node();
+        Node(int, int, int);
         virtual ~Node();
         int getID(); 
         std::pair<int,int> getLocation() const;
-        float distanceTo(const Node*);
+        //float distanceTo(const Node*);
         virtual void recievePacket(const Packet&);
     
     private:
