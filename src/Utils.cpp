@@ -5,14 +5,17 @@
 
 Utils::Utils(){
 
-    currUE_ID = 1000;
-    curr_gNB_ID = 5000;
-    srand(time(0));    
+    //currUE_ID = 1000;
+    //curr_gNB_ID = 5000;
+    //srand(time(0));    
 
 }
 
+Utils::~Utils(){
 
-int Utils::generateID(const int type) {
+}
+/*
+int Utils::generateID(const int type) { //move this to NetworkSimulator
     if(type == 0){  //UE ID
         UE_IDs.push_back(++currUE_ID);
         return currUE_ID;
@@ -25,7 +28,8 @@ int Utils::generateID(const int type) {
     
 }
 
-std::pair<int,int> Utils::generateCoordinates(){
+
+std::pair<int,int> Utils::generateCoordinates(){    //Move this to NetworkSimulator
     int x {rand() % 101};
     int y {rand() % 101};
 
@@ -39,6 +43,7 @@ std::pair<int,int> Utils::generateCoordinates(){
 
     return coordinates;
 }
+*/
 
 float Utils::calculateDistance(const Node& UE, const Node& gNB) const {
     auto [x1, y1] = UE.getLocation();
