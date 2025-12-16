@@ -2,6 +2,7 @@
 #define NODE_H
 
 #include <utility>
+#include <memory>
 #include "Packet.h"
 
 class Node {
@@ -11,8 +12,8 @@ class Node {
         virtual ~Node();
         int getID(); 
         std::pair<int,int> getLocation() const;
-        //float distanceTo(const Node*);
-        virtual void recievePacket(const Packet&);
+        //float distanceTo(const Node*); //remove?
+        //virtual void recievePacket(std::unique_ptr<Packet>); //UNCOMMENT
     
     private:
         int id;

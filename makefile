@@ -2,7 +2,7 @@
 CXX := g++
 
 # Compiler flags
-CXXFLAGS := -Wall -I$(INCLUDE_DIR) -std=c++17
+CXXFLAGS := -Wall -std=c++20
 
 # Directories
 SRC_DIR := src
@@ -30,7 +30,7 @@ $(TARGET): $(OBJS) | $(BIN_DIR)
 # Compile .cpp into .o in /build
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
 	@echo "Compiling $<..."
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -Iinclude -c $< -o $@
 
 # Create necessary directories if not exist
 $(BUILD_DIR):

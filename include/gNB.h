@@ -3,7 +3,7 @@
 
 #include "Node.h"
 #include "CoreNetwork.h" 
-#include <Packet.h>
+#include "Packet.h"
 #include <vector>
 #include <queue>
 
@@ -15,8 +15,9 @@ class gNB : public Node {
         ~gNB();
         void addUE();
         void removeUE();
-        void recievePacket(const Packet&);
+        void recievePacket(std::unique_ptr<Packet>);
         void forwardToCore(const CoreNetwork&);
+        //void disconnectUE(int);   /remove?
 
 
     private:
