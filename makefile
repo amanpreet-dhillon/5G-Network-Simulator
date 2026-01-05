@@ -1,57 +1,63 @@
-# Compiler
-CXX := g++
+# 1. Detect OS
+ifeq ($(OS),Windows_NT)
+    # Windows Settings
+    DETECTED_OS := Windows
+    mkdir_cmd = if not exist $(1) mkdir $(1)
+    rm_cmd = if exist $(1) rmdir /s /q $(1)
+    EXE_EXT := .exe
+    # Use ./ only if running in a shell that requires it (like Git Bash), 
+    # but for pure CMD/PowerShell, $(TARGET) is usually fine.
+    RUN_PREFIX := 
+else
+    # Linux/WSL/macOS Settings
+    DETECTED_OS := Linux
+    mkdir_cmd = mkdir -p $(1)
+    rm_cmd = rm -rf $(1)
+    EXE_EXT :=
+    RUN_PREFIX := ./
+endif
 
-# Compiler flags
+# 2. Compiler and Flags
+CXX := g++
 CXXFLAGS := -Wall -std=c++20
 
-# Directories
+# 3. Directories
 SRC_DIR := src
 BUILD_DIR := build
 INCLUDE_DIR := include
 BIN_DIR := bin
 
-# Target executable name
-TARGET := $(BIN_DIR)/5G_simulator
+# 4. Target executable name
+TARGET := $(BIN_DIR)/5G_simulator$(EXE_EXT)
 
-# Find all .cpp files in src/
+# 5. Files
 SRCS := $(wildcard $(SRC_DIR)/*.cpp)
-
-# Replace src/filename.cpp -> build/filename.o
 OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 
-# Default rule (build + run)
 all: run
 
-# Link object files into final executable
 $(TARGET): $(OBJS) | $(BIN_DIR)
-	@echo "Linking objects..."
+	@echo "Linking objects for $(DETECTED_OS)..."
 	$(CXX) $(OBJS) -o $(TARGET)
 
-# Compile .cpp into .o in /build
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
 	@echo "Compiling $<..."
-	$(CXX) $(CXXFLAGS) -Iinclude -c $< -o $@
+	$(CXX) $(CXXFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
-# Create necessary directories if not exist
+# 6. Commands using the OS variables
 $(BUILD_DIR):
-	@if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
+	@$(call mkdir_cmd, $(BUILD_DIR))
 
 $(BIN_DIR):
-	@if not exist $(BIN_DIR) mkdir $(BIN_DIR)
+	@$(call mkdir_cmd, $(BIN_DIR))
 
-# Run the program after building
 run: $(TARGET)
-	@echo "Running 5G simulator..."
-	@$(TARGET)
+	@echo "Running 5G simulator on $(DETECTED_OS)..."
+	@$(RUN_PREFIX)$(TARGET)
 
-# Clean rule
 clean:
-	@echo "Cleaning..."
-	@if exist $(BUILD_DIR) rmdir /s /q $(BUILD_DIR)
-	@if exist $(BIN_DIR) rmdir /s /q $(BIN_DIR)
+	@echo "Cleaning $(DETECTED_OS)..."
+	@$(call rm_cmd, $(BUILD_DIR))
+	@$(call rm_cmd, $(BIN_DIR))
 
-# Rebuild rule
-rebuild: clean all
-
-# Phony targets
 .PHONY: all clean rebuild run
