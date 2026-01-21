@@ -2,7 +2,7 @@
 #define UE_H
 
 #include <vector>
-#include <unordered_map>
+#include <map>
 #include "Node.h"
 #include "Utils.h"
 
@@ -17,7 +17,7 @@ class UE : public Node {
         UE(int, int, int);
         ~UE();
         void recievePacket(std::unique_ptr<Packet>);
-        void sendPacket();
+        void sendPacket(int, int, PacketType, const std::string&, int);
         void turnOn(std::vector<gNB*>);
         void turnOff();
         //void sendRegistrationRequest();
@@ -27,9 +27,10 @@ class UE : public Node {
         gNB* connected_gNB;
         bool active;
         Utils util;
-        std::unordered_map<int, int> recievedTracker;
-        //std::unordered_map<int, int> sentTracker;
-        
+        std::map<int, int> recievedPacketTracker; //keep track of packets recieved -- source ID / expected sequence
+        std::map<std::pair<int,int>, std::unique_ptr<Packet>> retransmissionQueue;  //stores packets sent to a specific destination  -- destination ID, expected sequence pair / packet sent
+        std::map<int, int> destinationSeqTracker; //keep track of the number of packets sent to a specific destination ID (i.e. the sequence number)
+        std::map<std::pair<int,int>, std::unique_ptr<Packet>> buffer;
 
 };
 

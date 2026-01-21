@@ -19,7 +19,7 @@ endif
 
 # 2. Compiler and Flags
 CXX := g++
-CXXFLAGS := -Wall -std=c++20
+CXXFLAGS := -Wall -std=c++20 -g
 
 # 3. Directories
 SRC_DIR := src

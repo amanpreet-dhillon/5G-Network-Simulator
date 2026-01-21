@@ -38,7 +38,8 @@ PacketType Packet::getPacketType() const {
 }
 
 const std::string Packet::getTimestamp() const {
-     return std::format("{:%Y-%m-%d %H:%M:%S}", timestamp);
+    auto trimmedTimestamp = std::chrono::time_point_cast<std::chrono::seconds>(timestamp);
+    return std::format("{:%Y-%m-%d %H:%M:%S}", trimmedTimestamp);
 }
 
 
@@ -52,36 +53,38 @@ const std::string Packet::print() const{
     std::string packType;
     switch (type)
     {
-    case PacketType::REGISTRATION_REQUEST: packType =  "REGISTRATION REQUEST";
-    case PacketType::REGISTRATION_COMPLETE: packType =  "REGISTRATION COMPLETE";
-    case PacketType::REGISTRATION_ACK: packType =  "REGISTRATION ACKNOWLEDGED";
-    case PacketType::DEREGISTRATION_REQUEST: packType =  "DEREGISTRATION REQUEST";
-    case PacketType::DATA_UPLINK: packType =  "DATA UPLINK";
-    case PacketType::DATA_DOWNLINK: packType =  "DATA DOWNLINK";
+    case PacketType::REGISTRATION_REQUEST: packType =  "REGISTRATION REQUEST"; break;
+    case PacketType::REGISTRATION_COMPLETE: packType =  "REGISTRATION COMPLETE"; break;
+    case PacketType::REGISTRATION_ACK: packType =  "REGISTRATION ACKNOWLEDGED"; break;
+    case PacketType::DEREGISTRATION_REQUEST: packType =  "DEREGISTRATION REQUEST"; break;
+    case PacketType::DATA: packType =  "DATA"; break;
+    case PacketType::ACK: packType =  "ACKNOWLEDGED"; break;
+    case PacketType::NACK: packType =  "NOT ACKNOWLEDGED"; break;
      
         
-    default: packType =  "UNKNOWN";
+    default: packType =  "UNKNOWN"; break;
     }
 
 
     std::string priType;
     switch (priority)
     {
-    case -1: priType =  "LOW";
-    case 0: priType =  "NEUTRAL";
-    case 1: priType =  "HIGH";
+    case -1: priType =  "LOW"; break;
+    case 0: priType =  "NEUTRAL"; break;
+    case 1: priType =  "HIGH"; break;
         
-    default: priType =  "NEUTRAL";
+    default: priType =  "NEUTRAL"; break;
     }
 
 
     std::stringstream output;
 
-    output  << "[" << getTimestamp() << "]; "
-            << "[ROUTE: " << sourceID << " ---> " << destinationID << "]; "
-            << "[SEQUENCE: " << sequenceNumber << "]; "
-            << "[TYPE: " << packType << "]; "
-            << "[PRIORITY: " << priType << "].";
+    output  << "[" << getTimestamp() << "]: "
+            << "[ROUTE: " << sourceID << " ---> " << destinationID << "] "
+            << "[SEQUENCE: " << sequenceNumber << "] "
+            << "[TYPE: " << packType << "] "
+            << "[PRIORITY: " << priType << "] "
+            << "[DATA: " << data << "].";
     
     return output.str(); 
 
