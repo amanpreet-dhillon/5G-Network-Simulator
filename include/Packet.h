@@ -13,7 +13,8 @@ enum class PacketType {
     DEREGISTRATION_REQUEST,
     DATA,
     ACK,
-    NACK
+    NACK,
+    SKIP
 };
 
 class Packet {

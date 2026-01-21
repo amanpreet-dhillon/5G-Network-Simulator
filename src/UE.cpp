@@ -37,15 +37,21 @@ void UE::turnOff(){
     
 }
 
+
 void UE::recievePacket(std::unique_ptr<Packet> recievedPacket){    //recieve packets and check for ACK
 
     if(recievedPacket->getPacketType() == PacketType::ACK){     //got ACK, remove from retransmissionQueue
+        
         if(retransmissionQueue.find({recievedPacket->getSource(), recievedPacket->getSequenceNum()}) != retransmissionQueue.end()){    //check if the packet exists in retransmissionQueue
             retransmissionQueue.erase({recievedPacket->getSource(), recievedPacket->getSequenceNum()});
         }
-    }
 
-    if(recievedPacket->getPacketType() == PacketType::DATA){    //recieved a DATA packet, check and verify seq
+    } else if (recievedPacket->getPacketType() == PacketType::SKIP){    //gNB could not find speciied packet, assume it is lost and move to next sequence
+        
+        recievedPacketTracker[recievedPacket->getSource()] = recievedPacket->getSequenceNum() + 1;
+        bufferCleanUp(recievedPacket->getSource());
+
+    } else if(recievedPacket->getPacketType() == PacketType::DATA){    //recieved a DATA packet, check and verify seq
 
         //verify if it is the epxected sequence number
         int expectedSeq {recievedPacketTracker[recievedPacket->getSource()]};
@@ -57,6 +63,8 @@ void UE::recievePacket(std::unique_ptr<Packet> recievedPacket){    //recieve pac
             //include logger here
             recievedPacketTracker[recievedPacket->getSource()]++;   //increment expected counter
             expectedSeq = recievedPacketTracker[recievedPacket->getSource()];
+
+            bufferCleanUp(recievedPacket->getSource());
         
         } else if (recievedPacket->getSequenceNum() < expectedSeq){    //recieved an old/duplicate packet, send ACK only
         
@@ -68,35 +76,6 @@ void UE::recievePacket(std::unique_ptr<Packet> recievedPacket){    //recieve pac
             sendPacket(connected_gNB->getID(), expectedSeq, PacketType::NACK, std::string("Did not recieve expected Packet, resend Packet#" + std::to_string(expectedSeq)), 1);     //ping gNB to send expectedSeq packet
 
         }
-        
-        
-            /*
-
-            while (!buffer.empty()){    //account for packets in queue
-                if(buffer.find({recievedPacket->getSource(), recievedPacket->getSequenceNum()}) != buffer.end()){   //check if packet is in buffer
-                    buffer.erase({recievedPacket->getSource(), recievedPacket->getSequenceNum()});
-                    recievedPacketTracker[recievedPacket->getSource()]++;
-                    expectedSeq = recievedPacketTracker[recievedPacket->getSource()];
-                }
-            }
-            
-            expectedSeq = recievedPacketTracker[recievedPacket->getSource()];
-            sendPacket(connected_gNB->getID(), expectedSeq, PacketType::ACK, std::string("Recieved Packet#" + std::to_string(expectedSeq-1)), 1); //sending ACK to gnb using Selective ACK
-            
-
-        } else if(recievedPacket->getSequenceNum() < expectedSeq) { //recieving a duplicate packet, reconfirm ACK
-
-
-            sendPacket(connected_gNB->getID(), recievedPacket->getSequenceNum(), PacketType::ACK, std::string("Recieved duplicate Packet#" + std::to_string(recievedPacket->getSequenceNum())), 1); 
-
-
-        } else if(recievedPacket->getSequenceNum() > expectedSeq){    //gap in sequence, missing a packet, add packet to buffer and send NACK
-
-            buffer[{recievedPacket->getSource(), recievedPacket->getSequenceNum()}] = std::move(recievedPacket);    //move 'future' packet to buffer
-
-            sendPacket(connected_gNB->getID(), expectedSeq, PacketType::NACK, std::string("Did not recieve expected Packet, resend Packet#" + std::to_string(expectedSeq)), 1); 
-        }
-        */
         
     }
 
@@ -127,5 +106,25 @@ void UE::sendPacket(int destinationID, int expectedSeq, PacketType packetType, c
         retransmissionQueue[{destinationID, seq}] = std::move(packetToStore);   
 
         //connected_gNB->recievePacket(std::move(packetToSend));
+    }
+}
+
+void UE::bufferCleanUp(int packetSource){
+
+    int expectedSeq {recievedPacketTracker[packetSource]};
+
+    if(!buffer.empty()){   //check if recieved packet is in buffer
+                    
+        if(buffer.find({packetSource, expectedSeq}) != buffer.end()){
+            while(buffer.find({packetSource, expectedSeq}) != buffer.end()){
+                sendPacket(connected_gNB->getID(), expectedSeq, PacketType::ACK, std::string("Recieved Packet#" + std::to_string(expectedSeq)), 1); //send ACk for packet recieved
+                buffer.erase({packetSource, expectedSeq}); //remove acknowledged packet from buffer
+                recievedPacketTracker[packetSource]++; 
+                expectedSeq = recievedPacketTracker[packetSource];
+            }
+        } else {    //still some missing packets before buffer can resolve
+            sendPacket(connected_gNB->getID(), expectedSeq, PacketType::NACK, std::string("Did not recieve expected Packet, resend Packet#" + std::to_string(expectedSeq)), 1);
+        }
+        
     }
 }
