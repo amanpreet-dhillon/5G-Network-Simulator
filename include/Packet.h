@@ -11,6 +11,7 @@ enum class PacketType {
     REGISTRATION_COMPLETE,
     REGISTRATION_ACK,
     DEREGISTRATION_REQUEST,
+    MOBILITY,
     DATA,
     ACK,
     NACK,

@@ -94,7 +94,7 @@ void UE::sendPacket(int destinationID, int expectedSeq, PacketType packetType, c
         std::unique_ptr<Packet> packetToSend = Packet::createPacket(this->getID(), destinationID, expectedSeq, packetType, data, prio);
         //connected_gNB->recievePacket(std::move(packetToSend));   
 
-    } else {
+    } else if (packetType == PacketType::DATA) {
 
         int seq {++destinationSeqTracker[destinationID]};   //update sequence number of destination
         
@@ -106,6 +106,11 @@ void UE::sendPacket(int destinationID, int expectedSeq, PacketType packetType, c
         retransmissionQueue[{destinationID, seq}] = std::move(packetToStore);   
 
         //connected_gNB->recievePacket(std::move(packetToSend));
+    } else if (packetType == PacketType::REGISTRATION_REQUEST){
+        std::unique_ptr<Packet> registrationReq = Packet::createPacket(this->getID(), 0, 0, packetType, data, 1);   //destination 0 is the core network
+        std::cout << registrationReq->print();
+
+        //connected_gNB->recievePacket(std::move(registrationReq));
     }
 }
 
@@ -127,4 +132,11 @@ void UE::bufferCleanUp(int packetSource){
         }
         
     }
+}
+
+void UE::setupRegistrationReq(){    //UE sends registration req to core network containing information about UE (ID and location)
+    
+    std::string UEinfo = {std::to_string(this->getID()) + "," + std::to_string(this->getLocation().first) + "," + std::to_string(this->getLocation().second)};
+
+    sendPacket(0, 0, PacketType::REGISTRATION_REQUEST, UEinfo, 1);
 }
