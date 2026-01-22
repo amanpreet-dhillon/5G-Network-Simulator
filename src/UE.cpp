@@ -24,7 +24,13 @@ void UE::turnOn(std::vector<gNB*> gNBList){
                 connected_gNB = tower;
             }
         }
+
+        if(connected_gNB){
+            setupRegistrationReq();
+        }
     }
+
+    
 
 }
 
