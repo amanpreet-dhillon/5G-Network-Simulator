@@ -22,6 +22,7 @@ class Packet {
 
     public:
         Packet(int, int, int, PacketType, const std::string&, int);
+        Packet(const Packet&);
         ~Packet();
         int getPriority() const;
         int getSource() const;

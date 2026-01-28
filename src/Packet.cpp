@@ -9,6 +9,13 @@ Packet::Packet(int src, int dest, int seq, PacketType t, const std::string& info
 
 }
 
+Packet::Packet(const Packet& packetToCopy)
+            : sourceID {packetToCopy.sourceID}, destinationID {packetToCopy.destinationID}, sequenceNumber {packetToCopy.sequenceNumber}, 
+            type {packetToCopy.type}, data {packetToCopy.data}, priority {packetToCopy.priority}, timestamp {packetToCopy.timestamp}
+{
+
+}
+
 Packet::~Packet(){
 
 }
@@ -58,8 +65,9 @@ const std::string Packet::print() const{
     case PacketType::REGISTRATION_ACK: packType =  "REGISTRATION ACKNOWLEDGED"; break;
     case PacketType::DEREGISTRATION_REQUEST: packType =  "DEREGISTRATION REQUEST"; break;
     case PacketType::DATA: packType =  "DATA"; break;
-    case PacketType::ACK: packType =  "ACKNOWLEDGED"; break;
-    case PacketType::NACK: packType =  "NOT ACKNOWLEDGED"; break;
+    case PacketType::ACK: packType =  "ACK"; break;
+    case PacketType::NACK: packType =  "NACK"; break;
+    case PacketType::SKIP: packType =  "SKIP"; break;
      
         
     default: packType =  "UNKNOWN"; break;

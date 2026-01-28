@@ -10,7 +10,7 @@
 
 
 class gNB;
-
+class Tester;
 
 class UE : public Node {
     public:
@@ -18,13 +18,13 @@ class UE : public Node {
         ~UE();
         void recievePacket(std::unique_ptr<Packet>);
         void sendPacket(int, int, PacketType, const std::string&, int);
-        void turnOn(std::vector<gNB*>);
+        void turnOn(std::vector<Tester*>);  //testing change
         void turnOff();
         //void sendRegistrationRequest();
         //void sendConfirmationRecieved();
 
     private:
-        gNB* connected_gNB;
+        Tester* connected_gNB;  //testing change
         bool active;
         Utils util;
         std::map<int, int> recievedPacketTracker; //keep track of packets recieved -- source ID / expected sequence
