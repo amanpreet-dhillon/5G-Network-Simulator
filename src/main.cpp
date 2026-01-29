@@ -12,13 +12,20 @@ int main() {
     //std::cout << "C++ version: " << __cplusplus << std::endl;
 
     UE testUE{1001, 5, 5};
-    Tester testGNB {5001, 10, 7};
+    Tester testGNB {5001, 5, -60};   //distance 65
+    Tester testGNB2 {5002, -2, -2};  //9.90 -> should connect to this 
+    Tester testGNB3 {5003, -20, 3};  //25.08
+    
 
     std::vector<Tester*> gnbList;
     gnbList.push_back(&testGNB);
+    gnbList.push_back(&testGNB2);
+    gnbList.push_back(&testGNB3);
 
-    std::cout << "UE #" << testUE.getID() << " @ " << testUE.getLocation().first << "," << testUE.getLocation().second << std::endl;
-    std::cout << "gNB #" << testGNB.getID() << " @ " << testGNB.getLocation().first << "," << testGNB.getLocation().second << std::endl;
+    
+
+    // std::cout << "UE #" << testUE.getID() << " @ " << testUE.getLocation().first << "," << testUE.getLocation().second << std::endl;
+    // std::cout << "gNB #" << testGNB.getID() << " @ " << testGNB.getLocation().first << "," << testGNB.getLocation().second << std::endl;
 
     std::cout << '\n' << '\n';
     
@@ -57,22 +64,22 @@ int main() {
 
     */
 
-    testString = "testing retransmission queue";
+    // testString = "testing retransmission queue";
+    // // testUE.sendPacket(5001, 1, PacketType::DATA, testString, 0);
+    // // testGNB.sendPacket(1001, 1, PacketType::ACK, testString, -1);
+    
+    // // testUE.sendPacket(5001, 2, PacketType::DATA, testString, 0);
     // testUE.sendPacket(5001, 1, PacketType::DATA, testString, 0);
-    // testGNB.sendPacket(1001, 1, PacketType::ACK, testString, -1);
     
-    // testUE.sendPacket(5001, 2, PacketType::DATA, testString, 0);
-    testUE.sendPacket(5001, 1, PacketType::DATA, testString, 0);
-    
-    // testGNB.sendPacket(1001, 2, PacketType::ACK, testString, -1);
+    // // testGNB.sendPacket(1001, 2, PacketType::ACK, testString, -1);
 
-    // testUE.sendPacket(5001, 4, PacketType::DATA, testString, 0);
-    // testGNB.sendPacket(1001, 4, PacketType::ACK, testString, -1);
+    // // testUE.sendPacket(5001, 4, PacketType::DATA, testString, 0);
+    // // testGNB.sendPacket(1001, 4, PacketType::ACK, testString, -1);
 
-    testString = "testing NACK";
+    // testString = "testing NACK";
+    // // testGNB.sendPacket(1001, 5, PacketType::NACK, testString, 1);
+
     // testGNB.sendPacket(1001, 5, PacketType::NACK, testString, 1);
-
-    testGNB.sendPacket(1001, 5, PacketType::NACK, testString, 1);
 
 
     std::cout << '\n' << '\n' << '\n';

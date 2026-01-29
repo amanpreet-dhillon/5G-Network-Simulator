@@ -3,6 +3,7 @@
 #include "Packet.h"
 #include "Tester.h"
 #include <iostream>
+#include <limits>
 
 UE::UE(int givenID, int xCoord, int yCoord) : Node(givenID, xCoord, yCoord){
     connected_gNB = nullptr;
@@ -17,17 +18,18 @@ void UE::turnOn(std::vector<Tester*> gNBList){  //testing change
     
     if(!this->active){
         active = true;
-        float currDistance = 0.0;
+        float currDistance = std::numeric_limits<float>::max();
 
         for (Tester* tower : gNBList){ //when UE turns on, find closest gNB //testing change
-            if (util.calculateDistance(*this, *tower) > currDistance){
+            if (util.calculateDistance(*this, *tower) < currDistance){
                 currDistance = util.calculateDistance(*this, *tower);
                 connected_gNB = tower;
             }
         }
 
-        if(connected_gNB){
+        if(connected_gNB){  //ADD error handling if no gnb is connected
             connected_gNB->connectUE(this); //just for testing, remove after
+            std::cout << "connected to gNB# " << connected_gNB->getID() << std::endl;
             setupRegistrationReq();
         }
     }
@@ -45,7 +47,7 @@ void UE::turnOff(){
     
 }
 
-
+ 
 void UE::recievePacket(std::unique_ptr<Packet> recievedPacket){    //recieve packets and check for ACK
 
 
@@ -74,7 +76,7 @@ void UE::recievePacket(std::unique_ptr<Packet> recievedPacket){    //recieve pac
         }
 
 
-    } else if(recievedPacket->getPacketType() == PacketType::DATA){    //recieved a DATA packet, check and verify seq
+    } else if(recievedPacket->getPacketType() == PacketType::DATA) {    //recieved a DATA packet, check and verify seq
 
         int expectedSeq;
         //verify if it is the epxected sequence number
@@ -107,6 +109,8 @@ void UE::recievePacket(std::unique_ptr<Packet> recievedPacket){    //recieve pac
 
         }
         
+    } else if (recievedPacket->getPacketType() == PacketType::REGISTRATION_COMPLETE) {   //registration COMPLETE by core network, confirm using ACK 
+        sendPacket(CORE_NETWORK, 0, PacketType::REGISTRATION_ACK, std::string("Registration Acknowledged by UE #" + std::to_string(this->getID())), 1);
     }
 
 
@@ -142,11 +146,11 @@ void UE::sendPacket(int destinationID, int expectedSeq, PacketType packetType, c
 
         connected_gNB->recievePacket(std::move(packetToSend));
 
-    } else if (packetType == PacketType::REGISTRATION_REQUEST){
-        std::unique_ptr<Packet> registrationReq = Packet::createPacket(this->getID(), 0, 0, packetType, data, 1);   //destination 0 is the core network
+    } else if (packetType == PacketType::REGISTRATION_REQUEST or packetType == PacketType::REGISTRATION_ACK){
+        std::unique_ptr<Packet> registrationPacket = Packet::createPacket(this->getID(), CORE_NETWORK, 0, packetType, data, 1);   //destination 0 is the core network
         //std::cout << registrationReq->print();
 
-        connected_gNB->recievePacket(std::move(registrationReq));
+        connected_gNB->recievePacket(std::move(registrationPacket));
     }
 }
 
@@ -174,5 +178,5 @@ void UE::setupRegistrationReq(){    //UE sends registration req to core network 
     
     std::string UEinfo = {std::to_string(this->getID()) + "," + std::to_string(this->getLocation().first) + "," + std::to_string(this->getLocation().second)};
 
-    sendPacket(0, 0, PacketType::REGISTRATION_REQUEST, UEinfo, 1);
+    sendPacket(CORE_NETWORK, 0, PacketType::REGISTRATION_REQUEST, UEinfo, 1);
 }
