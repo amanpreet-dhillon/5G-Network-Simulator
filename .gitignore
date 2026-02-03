@@ -1,0 +1,7 @@
+#ignore .o files
+*.o
+
+
+#ignore these directories
+/build
+/bin

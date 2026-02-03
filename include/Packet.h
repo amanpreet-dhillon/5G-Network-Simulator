@@ -11,14 +11,18 @@ enum class PacketType {
     REGISTRATION_COMPLETE,
     REGISTRATION_ACK,
     DEREGISTRATION_REQUEST,
-    DATA_UPLINK,
-    DATA_DOWNLINK
+    MOBILITY,
+    DATA,
+    ACK,
+    NACK,
+    SKIP
 };
 
 class Packet {
 
     public:
         Packet(int, int, int, PacketType, const std::string&, int);
+        Packet(const Packet&);
         ~Packet();
         int getPriority() const;
         int getSource() const;
@@ -29,7 +33,7 @@ class Packet {
         const std::string getTimestamp() const;
         void wrapPacket();
         void unwrapPacket();
-        std::unique_ptr<Packet> createPacket(int, int, int, PacketType, const std::string&, int);
+        static std::unique_ptr<Packet> createPacket(int, int, int, PacketType, const std::string&, int);
         const std::string print() const;
     
     private:               
