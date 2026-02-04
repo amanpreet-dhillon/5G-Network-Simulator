@@ -12,6 +12,11 @@ gNB::~gNB(){
 }
 
 void gNB::connectUE(UE* ue){
+    
+    int dlTEID = 40000 + ue->getID();
+    dl_TEIDs[dlTEID] = ue->getID();
+    //coreNetwork->recieveDLTEID(dlTEID, ue->getID());
+
     connectedUEs.push_back(ue);
 }
 
@@ -49,3 +54,6 @@ void gNB::sendPacket(int destID, int seq, PacketType pType, const std::string& d
 
 }
 
+void gNB::recieveULTEID(int ul_TEID, int ueID){
+    ul_TEIDs[ueID] = ul_TEID; 
+}
