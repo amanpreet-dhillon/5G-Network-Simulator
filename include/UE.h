@@ -17,13 +17,14 @@ class UE : public Node {
         UE(int, int, int);
         ~UE();
         void recievePacket(std::unique_ptr<Packet>);
-        void sendPacket(int, int, PacketType, const std::string&, int);
+        
         void turnOn(std::vector<Tester*>);  //testing change
         void turnOff();
         //void sendRegistrationRequest();
         //void sendConfirmationRecieved();
 
     private:
+        void sendPacket(int, int, PacketType, const std::string&, int);
         Tester* connected_gNB;  //testing change
         bool active;
         Utils util;
