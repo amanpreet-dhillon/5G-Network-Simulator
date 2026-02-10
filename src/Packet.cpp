@@ -98,3 +98,7 @@ const std::string Packet::print() const{
 
 }
 
+void Packet::overwriteSeq(int newSeq){
+    sequenceNumber = newSeq;
+}
+

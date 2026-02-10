@@ -67,7 +67,7 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
 
         if (recievedPacket->getSequenceNum() == expectedSeq){   //got expected packet, send ACK, update the seq for that source
             
-            sendPacket(recievedPacket->getSource(), recievedPacket->getDestination(), 0, PacketType::ACK, std::string("ACK packet# " + std::to_string(recievedPacket->getSequenceNum()) + " from " + std::to_string(recievedPacket->getSource()) + " to " +  std::to_string(recievedPacket->getSource())), 1);
+            sendPacket(recievedPacket->getSource(), recievedPacket->getDestination(), recievedPacket->getSequenceNum(), PacketType::ACK, std::string("ACK packet# " + std::to_string(recievedPacket->getSequenceNum()) + " from " + std::to_string(recievedPacket->getSource()) + " to " +  std::to_string(recievedPacket->getSource())), 1);
             //include logger here
             recievedPacketTracker[{recievedPacket->getSource(), recievedPacket->getDestination()}]++;   //increment expected counter
             expectedSeq = recievedPacketTracker[{recievedPacket->getSource(), recievedPacket->getDestination()}];
@@ -98,13 +98,13 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
     
 }
 
-void gNB::recievePacket(std::unique_ptr<GTPPacket> data){    //this will come from Core Netwwork, store in retransmissionQueue, unwrap, send to destination UE
+void gNB::recievePacket(std::unique_ptr<GTPPacket> data){    //this will come from Core Netwwork, store in retransmissionQueue, unwrap, send to destination UE (DL)
 
-    // inlcude retransmissionQueue logic
-    int seq {++destinationSeqTracker[{data->payload->getSource(), data->payload->getDestination()}]};   //update sequence number of destination
-    std::unique_ptr<Packet> packetToStore = Packet::createPacket(data->payload->getSource(), data->payload->getDestination(), seq, data->payload->getPacketType(), data->payload->getData(), data->payload->getPriority());    //packet for storage
-    //std::cout << packetToSend->print();
-    retransmissionQueue[{{data->payload->getSource(), data->payload->getDestination()}, seq}] = std::move(packetToStore);   
+    // // inlcude retransmissionQueue logic
+    // //int seq {++destinationSeqTracker[{data->payload->getSource(), data->payload->getDestination()}]};   //update sequence number of destination
+    // std::unique_ptr<Packet> packetToStore = Packet::createPacket(data->payload->getSource(), data->payload->getDestination(), data->payload->getSequenceNum(), data->payload->getPacketType(), data->payload->getData(), data->payload->getPriority());    //packet for storage
+    // //std::cout << packetToSend->print();
+    // retransmissionQueue[{{data->payload->getSource(), data->payload->getDestination()}, seq}] = std::move(packetToStore);   
     
     //unwrapping packet
     int destinationUE = dl_TEIDs[data->TEID];   
@@ -148,11 +148,12 @@ void gNB::sendPacket(int destID, std::unique_ptr<Packet> packet){ //used for sen
 
         //add to retransmissionQueue
         int seq {++destinationSeqTracker[{packet->getSource(), packet->getDestination()}]};   //update sequence number of destination
-        std::unique_ptr<Packet> packetToStore = std::make_unique<Packet>(*packet);
+        std::unique_ptr<Packet> updatedPacket = Packet::createPacket(packet->getSource(), packet->getDestination(), seq, packet->getPacketType(), packet->getData(), packet->getPriority());    //packet for storage
+        std::unique_ptr<Packet> packetToStore = std::make_unique<Packet>(*updatedPacket);
         retransmissionQueue[{{packet->getSource(), packet->getDestination()}, packet->getSequenceNum()}] = std::move(packetToStore);   
         
         //send packet to UE
-        connectedUEs[destID]->recievePacket(std::move(packet));
+        connectedUEs[destID]->recievePacket(std::move(updatedPacket));
     }
 }
 
