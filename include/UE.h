@@ -19,14 +19,15 @@ class UE : public Node {
         ~UE();
         void recievePacket(std::unique_ptr<Packet>);
         
-        void turnOn(std::vector<Tester*>);  //testing change
+        void turnOn(std::vector<gNB*>);  //testing change
         void turnOff();
         //void sendRegistrationRequest();
         //void sendConfirmationRecieved();
+        void sendPacket(int, int, PacketType, const std::string&, int);
 
     private:
-        void sendPacket(int, int, PacketType, const std::string&, int);
-        Tester* connected_gNB;  //testing change
+        
+        gNB* connected_gNB;  //testing change
         bool active;
         Utils util;
         
@@ -47,12 +48,12 @@ class UE : public Node {
 
 
 struct UEContext {
-    UE* ue;   
+    UE* ue = nullptr;   
     
     int nextDLSeq = 0;
     std::unordered_map<int, std::unique_ptr<Packet>> retransmissionQueue;   //seq, Packet
     
-    int expectedULSeq = 0;
+    int expectedULSeq = 1;
     std::map<int, std::unique_ptr<Packet>> buffer;  //seq, Packet
 };
 

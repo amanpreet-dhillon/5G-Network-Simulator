@@ -2,12 +2,15 @@
 #include "UE.h"
 #include <iostream>
 #include <algorithm>
+#include <string>
 
 gNB::gNB(int givenID, int xcord, int ycord) : Node(givenID, xcord, ycord){
 
 }
 
 gNB::~gNB(){
+
+    ueRegistery.clear();
 
 }
 
@@ -19,6 +22,8 @@ void gNB::connectUE(UE* ue){
     auto ueContext = std::make_unique<UEContext>();
     ueContext->ue = ue;
     ueRegistery[ue->getID()] = std::move(ueContext);
+
+    std::cout << "gNB has added UE#" + std::to_string(ueRegistery[ue->getID()]->ue->getID()) << std::endl;
     
 }
 
@@ -38,6 +43,8 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
     //NACK ->  recievedPacket source is the source UE of original packet, destination is the destination UE of original packet
 
     if(sourceUE != ueRegistery.end()){
+
+        std::cout  << recievedPacket->print() << std::endl;
 
         auto& retransmissionQueue = sourceUE->second->retransmissionQueue;
 
@@ -75,7 +82,7 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
 
             if (recievedPacket->getSequenceNum() == expectedSeq){   //got expected packet, send ACK, update the seq for that source
                 
-                sendPacket(recievedPacket->getSource(), recievedPacket->getDestination(), recievedPacket->getSequenceNum(), PacketType::ACK, std::string("ACK packet# " + std::to_string(recievedPacket->getSequenceNum()) + " from " + std::to_string(recievedPacket->getSource()) + " to " +  std::to_string(recievedPacket->getSource())), 1);
+                sendPacket(recievedPacket->getSource(), recievedPacket->getDestination(), recievedPacket->getSequenceNum(), PacketType::ACK, std::string("ACK packet# " + std::to_string(recievedPacket->getSequenceNum()) + " from " + std::to_string(recievedPacket->getSource()) + " to " +  std::to_string(recievedPacket->getDestination())), 1);
                 //include logger here
                 sourceUE->second->expectedULSeq++;   //increment expected counter
                 bufferCleanUp(recievedPacket->getSource());
@@ -84,14 +91,14 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
             
             } else if (recievedPacket->getSequenceNum() < expectedSeq){    //recieved an old/duplicate packet, send ACK only
             
-                sendPacket(recievedPacket->getSource(), recievedPacket->getDestination(), 0, PacketType::ACK, std::string("Duplicate packet recieved, packet# " + std::to_string(recievedPacket->getSequenceNum()) + " from " + std::to_string(recievedPacket->getSource()) + " to " +  std::to_string(recievedPacket->getSource())), 1); //send ACk for old/dupe packet recieved
+                sendPacket(recievedPacket->getSource(), recievedPacket->getDestination(), 0, PacketType::ACK, std::string("Old packet recieved, packet# " + std::to_string(recievedPacket->getSequenceNum()) + " from " + std::to_string(recievedPacket->getSource()) + " to " +  std::to_string(recievedPacket->getDestination())), 1); //send ACk for old/dupe packet recieved
             
             } else if (recievedPacket->getSequenceNum() > expectedSeq){     //recieved a future/out-of-order packet, store it and ask for missing packets
                 
                 auto& buffer = sourceUE->second->buffer;
                 
-                buffer[recievedPacket->getSequenceNum()] = std::move(recievedPacket);    //move 'future' packet to buffer
                 sendPacket(recievedPacket->getSource(), recievedPacket->getDestination(), expectedSeq, PacketType::NACK, std::string("Did not recieve expected Packet, resend Packet #" + std::to_string(expectedSeq) + " from " + std::to_string(recievedPacket->getSource()) + " to " + std::to_string(recievedPacket->getDestination())), 1);     //ping gNB to send expectedSeq packet, using source of packet as destination
+                buffer[recievedPacket->getSequenceNum()] = std::move(recievedPacket);    //move 'future' packet to buffer
 
             }
 
@@ -118,6 +125,9 @@ void gNB::recievePacket(std::unique_ptr<GTPPacket> data){    //this will come fr
     
     //unwrapping packet
     int destinationUE = dl_TEIDs[data->TEID];   
+
+    //std::cout << data->payload->print() << std::endl;
+
     sendPacket(destinationUE, std::move(data->payload));
     
 }
@@ -177,7 +187,7 @@ void gNB::sendPacket(int destID, std::unique_ptr<Packet> packet){ //used for sen
 }
 
 void gNB::recieveUL_TEID(int ul_TEID, int ueID){
-    ul_TEIDs[ueID] = ul_TEID; 
+    //ul_TEIDs[ueID] = ul_TEID; 
 }
 
 

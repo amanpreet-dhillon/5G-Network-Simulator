@@ -16,13 +16,13 @@ UE::~UE(){
     
 }
 
-void UE::turnOn(std::vector<Tester*> gNBList){  //testing change
+void UE::turnOn(std::vector<gNB*> gNBList){  //testing change
     
     if(!this->active){
         active = true;
         float currDistance = std::numeric_limits<float>::max();
 
-        for (Tester* tower : gNBList){ //when UE turns on, find closest gNB //testing change
+        for (gNB* tower : gNBList){ //when UE turns on, find closest gNB //testing change
             if (util.calculateDistance(*this, *tower) < currDistance){
                 currDistance = util.calculateDistance(*this, *tower);
                 connected_gNB = tower;
@@ -43,7 +43,7 @@ void UE::turnOn(std::vector<Tester*> gNBList){  //testing change
 void UE::turnOff(){
     if(this->active){
         active = false;
-        connected_gNB->disconnectUE(this->getID());
+        connected_gNB->disconnectUE(this);
         connected_gNB = nullptr;    //when UE turns off, disconnect from gNB
     }
     
