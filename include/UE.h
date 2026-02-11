@@ -45,4 +45,16 @@ class UE : public Node {
 
 };
 
+
+struct UEContext {
+    UE* ue;   
+    
+    int nextDLSeq = 0;
+    std::unordered_map<int, std::unique_ptr<Packet>> retransmissionQueue;   //seq, Packet
+    
+    int expectedULSeq = 0;
+    std::map<int, std::unique_ptr<Packet>> buffer;  //seq, Packet
+};
+
+
 #endif
