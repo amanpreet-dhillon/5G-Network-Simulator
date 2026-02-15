@@ -92,7 +92,7 @@ const std::string Packet::print() const{
             << "[SEQUENCE: " << sequenceNumber << "] "
             << "[TYPE: " << packType << "] "
             << "[PRIORITY: " << priType << "] "
-            << "[DATA: " << data << "].";
+            << "[PAYLOAD: " << data << "]." << '\n';
     
     return output.str(); 
 

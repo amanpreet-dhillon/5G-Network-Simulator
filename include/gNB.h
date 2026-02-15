@@ -10,7 +10,22 @@
 #include <unordered_map>
 
 class UE;
-struct UEContext;
+
+struct GTPPacket {
+    int TEID;   //TEIDs will be coded as 8XXXX (UL) or 4XXXX (DL) where XXXX = UE ID,
+    std::unique_ptr<Packet> payload;
+};
+
+struct UEContext {
+    UE* ue = nullptr;   
+    
+    int nextDLSeq = 0;
+    std::unordered_map<int, std::unique_ptr<Packet>> retransmissionQueue;   //seq, Packet
+    
+    int expectedULSeq = 1;
+    std::map<int, std::unique_ptr<Packet>> buffer;  //seq, Packet
+};
+
 
 class gNB : public Node {
     public:
@@ -26,12 +41,17 @@ class gNB : public Node {
         void recieveUL_TEID(int, int);
         //void disconnectUE(int);   /remove?
 
+        
+        void tester_addPacketToReQueue(int, int);
+        void sendPacket(int, int, int, PacketType, const std::string&, int);
+        void sendPacket(int, std::unique_ptr<Packet>);
+
 
     private:
         std::unordered_map<int, std::unique_ptr<UEContext>> ueRegistery;
         void forwardToCore(std::unique_ptr<Packet>);
-        void sendPacket(int, int, int, PacketType, const std::string&, int);
-        void sendPacket(int, std::unique_ptr<Packet>);
+        // void sendPacket(int, int, int, PacketType, const std::string&, int);
+        // void sendPacket(int, std::unique_ptr<Packet>);
         const CoreNetwork* coreNetwork;
         //std::unordered_map<int, UE*> connectedUEs;
         std::unordered_map<int, int> dl_TEIDs;  //TEID maps to UE ID
@@ -48,5 +68,7 @@ class gNB : public Node {
 
 
 };
+
+
 
 #endif

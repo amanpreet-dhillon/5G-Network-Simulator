@@ -25,6 +25,10 @@ class UE : public Node {
         //void sendConfirmationRecieved();
         void sendPacket(int, int, PacketType, const std::string&, int);
 
+
+        void tester_addPacketToReQueue(int, int);
+
+
     private:
         
         gNB* connected_gNB;  //testing change
@@ -44,17 +48,8 @@ class UE : public Node {
         void bufferCleanUp(int);
         void setupRegistrationReq();
 
-};
 
-
-struct UEContext {
-    UE* ue = nullptr;   
-    
-    int nextDLSeq = 0;
-    std::unordered_map<int, std::unique_ptr<Packet>> retransmissionQueue;   //seq, Packet
-    
-    int expectedULSeq = 1;
-    std::map<int, std::unique_ptr<Packet>> buffer;  //seq, Packet
+        
 };
 
 

@@ -8,7 +8,7 @@
 UE::UE(int givenID, int xCoord, int yCoord) : Node(givenID, xCoord, yCoord){
     connected_gNB = nullptr;
     active = false;
-    receievedPacketSeq = 0;
+    receievedPacketSeq = 1;
     sentPacketSeq = 0;
 }
 
@@ -75,6 +75,7 @@ void UE::recievePacket(std::unique_ptr<Packet> recievedPacket){    //recieve pac
             connected_gNB->recievePacket(std::move(packetToSend));
         } else {
             sendPacket(connected_gNB->getID(), -1, PacketType::SKIP, std::string("Could not find Packet #" + std::to_string(recievedPacket->getSequenceNum())), 1);
+            sentPacketSeq = recievedPacket->getSequenceNum()+1;
         }
 
 
@@ -110,12 +111,12 @@ void UE::sendPacket(int destinationID, int expectedSeq, PacketType packetType, c
 
     if(packetType == PacketType::ACK){  //just sending ACK, no need to store
 
-        std::unique_ptr<Packet> packetToSend = Packet::createPacket(destinationID, this->getID(), expectedSeq, packetType, data, prio); //packet source is the original packet's source, destination is the recieving UE (i.e. this)
+        std::unique_ptr<Packet> packetToSend = Packet::createPacket(this->getID(), destinationID, expectedSeq, packetType, data, prio); 
         connected_gNB->recievePacket(std::move(packetToSend));   
 
     } else if (packetType == PacketType::NACK) {    //sending NACK
         
-        std::unique_ptr<Packet> packetToSend = Packet::createPacket(destinationID, this->getID(), expectedSeq, packetType, data, prio); //packet source is the original packet's source, destination is the recieving UE (i.e. this)
+        std::unique_ptr<Packet> packetToSend = Packet::createPacket(this->getID(), destinationID, expectedSeq, packetType, data, prio); 
         connected_gNB->recievePacket(std::move(packetToSend));   
 
     } else if(packetType == PacketType::SKIP) {     //sending SKIP
@@ -165,4 +166,11 @@ void UE::setupRegistrationReq(){    //UE sends registration req to core network 
     std::string UEinfo = {std::to_string(this->getID()) + "," + std::to_string(this->getLocation().first) + "," + std::to_string(this->getLocation().second)};
 
     sendPacket(CORE_NETWORK, 0, PacketType::REGISTRATION_REQUEST, UEinfo, 1);
+}
+
+
+void UE::tester_addPacketToReQueue(int ue_id, int seq){
+
+    retransmissionQueue[seq] = std::move(std::make_unique<Packet>(1005, 1001, seq, PacketType::DATA, "queued packet #" + std::to_string(seq), 0));
+    
 }

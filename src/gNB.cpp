@@ -61,7 +61,8 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
                 //connectedUEs[recievedPacket->getSource()]->recievePacket(std::move(packetToSend));
                 sourceUE->second->ue->recievePacket(std::move(packetToSend));
             } else {
-                sendPacket(recievedPacket->getSource(), recievedPacket->getDestination(), -1, PacketType::SKIP, std::string("Could not find Packet #" + std::to_string(recievedPacket->getSequenceNum()) + "from source #" + std::to_string(recievedPacket->getDestination())), 1);
+                sendPacket(this->getID(), recievedPacket->getSource(), -1, PacketType::SKIP, std::string("Could not find Packet #" + std::to_string(recievedPacket->getSequenceNum()) + " from source #" + std::to_string(recievedPacket->getDestination())), 1);
+                sourceUE->second->nextDLSeq = recievedPacket->getSequenceNum()+1;
             }
 
         } else if (recievedPacket->getPacketType() == PacketType::SKIP) {
@@ -82,23 +83,29 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
 
             if (recievedPacket->getSequenceNum() == expectedSeq){   //got expected packet, send ACK, update the seq for that source
                 
-                sendPacket(recievedPacket->getSource(), recievedPacket->getDestination(), recievedPacket->getSequenceNum(), PacketType::ACK, std::string("ACK packet# " + std::to_string(recievedPacket->getSequenceNum()) + " from " + std::to_string(recievedPacket->getSource()) + " to " +  std::to_string(recievedPacket->getDestination())), 1);
+                sendPacket(this->getID(), recievedPacket->getSource(), recievedPacket->getSequenceNum(), PacketType::ACK, std::string("ACK packet# " + std::to_string(recievedPacket->getSequenceNum()) + " from " + std::to_string(recievedPacket->getSource()) + " to " +  std::to_string(recievedPacket->getDestination())), 1);
                 //include logger here
                 sourceUE->second->expectedULSeq++;   //increment expected counter
                 bufferCleanUp(recievedPacket->getSource());
                 
                 forwardToCore(std::move(recievedPacket));
             
+                
+
             } else if (recievedPacket->getSequenceNum() < expectedSeq){    //recieved an old/duplicate packet, send ACK only
             
-                sendPacket(recievedPacket->getSource(), recievedPacket->getDestination(), 0, PacketType::ACK, std::string("Old packet recieved, packet# " + std::to_string(recievedPacket->getSequenceNum()) + " from " + std::to_string(recievedPacket->getSource()) + " to " +  std::to_string(recievedPacket->getDestination())), 1); //send ACk for old/dupe packet recieved
+                sendPacket(this->getID(), recievedPacket->getSource(), 0, PacketType::ACK, std::string("Old packet recieved, packet# " + std::to_string(recievedPacket->getSequenceNum()) + " from " + std::to_string(recievedPacket->getSource()) + " to " +  std::to_string(recievedPacket->getDestination())), 1); //send ACk for old/dupe packet recieved
             
             } else if (recievedPacket->getSequenceNum() > expectedSeq){     //recieved a future/out-of-order packet, store it and ask for missing packets
                 
+                int source {recievedPacket->getSource()};
+                int dest {recievedPacket->getDestination()};
+
                 auto& buffer = sourceUE->second->buffer;
+                buffer[recievedPacket->getSequenceNum()] = std::move(recievedPacket);    //move 'future' packet to buffer                
                 
-                sendPacket(recievedPacket->getSource(), recievedPacket->getDestination(), expectedSeq, PacketType::NACK, std::string("Did not recieve expected Packet, resend Packet #" + std::to_string(expectedSeq) + " from " + std::to_string(recievedPacket->getSource()) + " to " + std::to_string(recievedPacket->getDestination())), 1);     //ping gNB to send expectedSeq packet, using source of packet as destination
-                buffer[recievedPacket->getSequenceNum()] = std::move(recievedPacket);    //move 'future' packet to buffer
+                sendPacket(this->getID(), source, expectedSeq, PacketType::NACK, std::string("Did not recieve expected Packet, resend Packet #" + std::to_string(expectedSeq) + " from " + std::to_string(source) + " to " + std::to_string(dest)), 1);     //ping gNB to send expectedSeq packet, using source of packet as destination
+                
 
             }
 
@@ -150,16 +157,16 @@ void gNB::sendPacket(int sourceID, int destID, int seq, PacketType pType, const 
     //ACK -> send {dest, seq} as dest, seq of ACK packet
     //SKIP -> send source of packet to UE as the source to skip from
     //NACK -> send dest ID as the destination of the missing packet needed from source UE
-    if (ueRegistery.count(sourceID)){
+    if (ueRegistery.count(destID)){
         if (pType == PacketType::ACK){
-            std::unique_ptr<Packet> packetToSend = Packet::createPacket(sourceID, destID, seq, pType, data, prio);
-            ueRegistery[sourceID]->ue->recievePacket(std::move(packetToSend));
+            std::unique_ptr<Packet> packetToSend = Packet::createPacket(this->getID(), destID, seq, pType, data, prio);
+            ueRegistery[destID]->ue->recievePacket(std::move(packetToSend));
         } else if (pType == PacketType::NACK){
-            std::unique_ptr<Packet> packetToSend = Packet::createPacket(sourceID, destID, seq, pType, data, prio);
-            ueRegistery[sourceID]->ue->recievePacket(std::move(packetToSend));
+            std::unique_ptr<Packet> packetToSend = Packet::createPacket(this->getID(), destID, seq, pType, data, prio);
+            ueRegistery[destID]->ue->recievePacket(std::move(packetToSend));
         } else if (pType == PacketType::SKIP){
-            std::unique_ptr<Packet> packetToSend = Packet::createPacket(sourceID, destID, seq, pType, data, prio);
-            ueRegistery[sourceID]->ue->recievePacket(std::move(packetToSend));
+            std::unique_ptr<Packet> packetToSend = Packet::createPacket(this->getID(), destID, seq, pType, data, prio);
+            ueRegistery[destID]->ue->recievePacket(std::move(packetToSend));
         }
     }
   
@@ -201,6 +208,7 @@ void gNB::bufferCleanUp(int sourceID){
         if(buffer.find(receievedPacketSeq) != buffer.end()){
             while(buffer.find(receievedPacketSeq) != buffer.end()){
                 sendPacket(this->getID(), sourceID, receievedPacketSeq, PacketType::ACK, std::string("Recieved Packet #" + std::to_string(receievedPacketSeq) + " from source #" + std::to_string(buffer[receievedPacketSeq]->getSource())), 1); //send ACk for packet recieved
+                forwardToCore(std::move(buffer[receievedPacketSeq]));
                 buffer.erase(receievedPacketSeq); //remove acknowledged packet from buffer
                 receievedPacketSeq++; 
             }
@@ -208,5 +216,14 @@ void gNB::bufferCleanUp(int sourceID){
             sendPacket(this->getID(), sourceID, receievedPacketSeq, PacketType::NACK, std::string("Did not recieve expected Packet, resend Packet #" + std::to_string(receievedPacketSeq)), 1);
         }
     
+    }
+}
+
+void gNB::tester_addPacketToReQueue(int ue_id, int seq){
+
+    if(ueRegistery.count(ue_id)){
+        auto& ueContext = ueRegistery[ue_id];
+
+        ueContext->retransmissionQueue[seq] = std::move(std::make_unique<Packet>(1005, 1001, seq, PacketType::DATA, "queued packet #" + std::to_string(seq), 0));
     }
 }
