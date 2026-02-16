@@ -38,7 +38,7 @@ int main() {
 
     std::string testString {"Hello World!"};
     
-
+    /* UE TESTING
     //testing send
 
     // //basic send
@@ -98,9 +98,55 @@ int main() {
     // //auto testPacket3 = std::make_unique<Packet>(5002, 1001, 8, PacketType::NACK, testString, 0);
     // testGNB2.sendPacket(1001, 5002, 8, PacketType::NACK, testString, 1);
     
+    */
+    
+
+    //gNB testing
+
+    //sending
+
+    // //send basic
+    // testString = "test basic send";
+    // auto testPacket = std::make_unique<Packet>(1005, 1001, 1, PacketType::DATA, testString, 0);
+    // testGNB2.sendPacket(1001, std::move(testPacket));
 
     
-    
+    // //send ACK
+    // testString = "test send ACK";
+    // testUE.sendPacket(1005, 1, PacketType::DATA, testString, 0);
+
+    // //send NACK
+    // testString = "test send NACK";
+    // testUE.sendPacket(1005, 5, PacketType::DATA, testString, 0);
+
+
+    //send SKIP
+    // testString = "testing SKIP send";
+    // testUE.sendPacket(1005, 5, PacketType::NACK, testString, 1);
+
+
+
+    //recieve
+
+
+    //get basic
+    // testString = "test basic recieve";
+    // testUE.sendPacket(1005, 1, PacketType::DATA, testString, 0);
+
+    // //get ACK
+    // testString = "test ACK recieve";
+    // testGNB2.tester_addPacketToReQueue(1001, 1);
+    // testUE.sendPacket(5002, 1, PacketType::ACK, testString, 0);
+
+
+    //get NACK
+    // testString = "test NACK recieve";
+    // testGNB2.tester_addPacketToReQueue(1001, 1);
+    // testUE.sendPacket(5002, 1, PacketType::NACK, testString, 0);
+
+    //get SKIP
+    // testString = "test SKIP recieve";
+    // testUE.sendPacket(5002, 5, PacketType::SKIP, testString, 1);
 
     std::cout << '\n' << '\n' << '\n';
 

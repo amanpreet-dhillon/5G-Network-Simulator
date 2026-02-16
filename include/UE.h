@@ -18,33 +18,20 @@ class UE : public Node {
         UE(int, int, int);
         ~UE();
         void recievePacket(std::unique_ptr<Packet>);
-        
-        void turnOn(std::vector<gNB*>);  //testing change
+        void turnOn(std::vector<gNB*>);
         void turnOff();
-        //void sendRegistrationRequest();
-        //void sendConfirmationRecieved();
-        void sendPacket(int, int, PacketType, const std::string&, int);
-
-
-        void tester_addPacketToReQueue(int, int);
-
+        //void tester_addPacketToReQueue(int, int);
 
     private:
         
-        gNB* connected_gNB;  //testing change
+        gNB* connected_gNB;
         bool active;
         Utils util;
-        
-        //std::map<int, int> recievedPacketTracker; //keep track of packets recieved -- source ID / expected sequence
         int receievedPacketSeq; //keep track of order of received packets
-        
-        //std::map<std::pair<int,int>, std::unique_ptr<Packet>> retransmissionQueue;  //stores packets sent to a specific destination  -- destination ID, expected sequence pair / packet sent
-        std::unordered_map<int, std::unique_ptr<Packet>> retransmissionQueue;
-
-        //std::map<int, int> destinationSeqTracker; //keep track of the number of packets sent to a specific destination ID (i.e. the sequence number)
-        int sentPacketSeq;
-
-        std::map<int, std::unique_ptr<Packet>> buffer;
+        std::unordered_map<int, std::unique_ptr<Packet>> retransmissionQueue;   //stores packets sent by UE temporarily (until ACK is sent by gNB)
+        int sentPacketSeq;  //keep track of order of packets sent
+        std::map<int, std::unique_ptr<Packet>> buffer;  //stores out-of-order/'future' packets until they can be processsed
+        void sendPacket(int, int, PacketType, const std::string&, int);
         void bufferCleanUp(int);
         void setupRegistrationReq();
 

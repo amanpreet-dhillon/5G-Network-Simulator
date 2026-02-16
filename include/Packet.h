@@ -51,9 +51,4 @@ class Packet {
 
 };
 
-// struct GTPPacket {
-//     int TEID;   //TEIDs will be coded as 8XXXX (UL) or 4XXXX (DL) where XXXX = UE ID,
-//     std::unique_ptr<Packet> payload;
-// };
-
 #endif
