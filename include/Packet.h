@@ -35,6 +35,7 @@ class Packet {
         void unwrapPacket();
         static std::unique_ptr<Packet> createPacket(int, int, int, PacketType, const std::string&, int);
         const std::string print() const;
+        void overwriteSeq(int);
     
     private:               
         
