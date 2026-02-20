@@ -5,7 +5,8 @@
 #include <string>
 
 gNB::gNB(int givenID, int xcord, int ycord) : Node(givenID, xcord, ycord){
-
+    ul_TEIDs[0] = 0;    //CORE NETWORK
+    ul_TEIDs[9999] = 9999;  //INTERNET
 }
 
 gNB::~gNB(){
@@ -15,10 +16,12 @@ gNB::~gNB(){
 }
 
 void gNB::connectUE(UE* ue){
+
+    auto dlTEID = std::stoi(std::to_string(this->getID()) + std::to_string(ue->getID()));
     
-    int dlTEID = 40000 + ue->getID();
+    //int dlTEID = 40000 + ue->getID();
     dl_TEIDs[dlTEID] = ue->getID();
-    //coreNetwork->recieveDLTEID(dlTEID, ue->getID());
+    //coreNetwork->recieveDL_TEID(dlTEID, ue->getID());
     auto ueContext = std::make_unique<UEContext>();
     ueContext->ue = ue;
     ueRegistery[ue->getID()] = std::move(ueContext);
@@ -31,7 +34,7 @@ void gNB::disconnectUE(UE* ue){
        
     if (ueRegistery.count(ue->getID())){
         //coreNetwork->removeUE(ue->getID()); ????
-        //ueRegistery[ue->getID()]->ue = nullptr;
+        ueRegistery[ue->getID()]->ue = nullptr;
         ueRegistery.erase(ue->getID());
     }
 }
@@ -128,7 +131,7 @@ void gNB::forwardToCore(std::unique_ptr<Packet> packetToForward){
     //coreNetwork->recievePacket(std::move(wrappedPacket))
 }
 
-void gNB::establishConnectionToCore(const CoreNetwork* cN){
+void gNB::establishConnectionToCore(CoreNetwork* cN){
     coreNetwork = cN;
 }
 
@@ -172,7 +175,7 @@ void gNB::sendPacket(int destID, std::unique_ptr<Packet> packet){ //used for sen
 }
 
 void gNB::recieveUL_TEID(int ul_TEID, int ueID){
-    //ul_TEIDs[ueID] = ul_TEID; 
+    ul_TEIDs[ueID] = ul_TEID; 
 }
 
 
