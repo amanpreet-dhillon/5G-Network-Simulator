@@ -5,8 +5,8 @@
 #include <string>
 
 gNB::gNB(int givenID, int xcord, int ycord) : Node(givenID, xcord, ycord){
-    ul_TEIDs[0] = 0;    //CORE NETWORK
-    ul_TEIDs[9999] = 9999;  //INTERNET
+    ul_TEIDs[0] = std::stoi(std::to_string(this->getID()) + std::to_string(0));    //CORE NETWORK
+    ul_TEIDs[9999] = std::stoi(std::to_string(this->getID()) + std::to_string(9999));;  //INTERNET
 }
 
 gNB::~gNB(){
@@ -21,30 +21,31 @@ void gNB::connectUE(UE* ue){
     
     //int dlTEID = 40000 + ue->getID();
     dl_TEIDs[dlTEID] = ue->getID();
-    //coreNetwork->recieveDL_TEID(dlTEID, ue->getID());
+    coreNetwork->recieveDL_TEID(dlTEID, ue->getID());
     auto ueContext = std::make_unique<UEContext>();
     ueContext->ue = ue;
     ueRegistery[ue->getID()] = std::move(ueContext);
 
-    std::cout << "gNB has added UE#" + std::to_string(ueRegistery[ue->getID()]->ue->getID()) << std::endl;
+    //std::cout << "gNB has added UE#" + std::to_string(ueRegistery[ue->getID()]->ue->getID()) << std::endl;
     
 }
 
-void gNB::disconnectUE(UE* ue){
+void gNB::disconnectUE(int ueID){
        
-    if (ueRegistery.count(ue->getID())){
-        //coreNetwork->removeUE(ue->getID()); ????
-        ueRegistery[ue->getID()]->ue = nullptr;
-        ueRegistery.erase(ue->getID());
+    if (ueRegistery.count(ueID)){
+        //coreNetwork->removeUE(ueID);
+        ueRegistery[ueID]->ue = nullptr;
+        ueRegistery.erase(ueID);
     }
 }
 
 void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will come from a UE, if DATA or registration related then wrap and forward to Core Network, else other handles (UL)
-    auto sourceUE = ueRegistery.find(recievedPacket->getSource());
 
-    if(sourceUE != ueRegistery.end()){
+    if(ueRegistery.count(recievedPacket->getSource())){
+        auto sourceUE = ueRegistery.find(recievedPacket->getSource());
 
-        std::cout  << recievedPacket->print() << std::endl;
+        //std::cout  << recievedPacket->print() << std::endl;
+        //std::cout << "gnb Recieving: " << recievedPacket->print() << std::endl;
 
         auto& retransmissionQueue = sourceUE->second->retransmissionQueue;
 
@@ -116,19 +117,30 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
 }
 
 void gNB::recievePacket(std::unique_ptr<GTPPacket> data){    //this will come from Core Netwwork, unwrap, send to destination UE (DL)    
-    
+    //std::cout << "gnb Recieving: " << data->payload->print() << std::endl;
+
     //unwrapping packet
     int destinationUE = dl_TEIDs[data->TEID];   
     sendPacket(destinationUE, std::move(data->payload));   
 }
 
 void gNB::forwardToCore(std::unique_ptr<Packet> packetToForward){ 
+
+    if (packetToForward->getPacketType() == PacketType::REGISTRATION_REQUEST){
+        //wrapping packet
+        auto wrappedPacket = std::make_unique<GTPPacket>();
+        wrappedPacket->TEID = ul_TEIDs[0];  //destination must be core network
+        wrappedPacket->payload = std::move(packetToForward);    
+        coreNetwork->recievePacket(std::move(wrappedPacket));
+    } else {
+        //wrapping packet
+        auto wrappedPacket = std::make_unique<GTPPacket>();
+        wrappedPacket->TEID = ul_TEIDs[packetToForward->getSource()]; 
+        wrappedPacket->payload = std::move(packetToForward);    
+        coreNetwork->recievePacket(std::move(wrappedPacket));
+    }
     
-    //wrapping packet
-    auto wrappedPacket = std::make_unique<GTPPacket>();
-    wrappedPacket->TEID = ul_TEIDs[packetToForward->getDestination()]; 
-    wrappedPacket->payload = std::move(packetToForward);    
-    //coreNetwork->recievePacket(std::move(wrappedPacket))
+    
 }
 
 void gNB::establishConnectionToCore(CoreNetwork* cN){

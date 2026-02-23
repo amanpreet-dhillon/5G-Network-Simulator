@@ -26,6 +26,7 @@ class CoreNetwork {
         void recievePacket(std::unique_ptr<GTPPacket>);
         void recieveDL_TEID(int, int);
         void loadEquipment(std::vector<std::unique_ptr<Node>>, const std::string&);
+        void removeUE(int);
         static constexpr int INTERNET = 9999;
         static constexpr int CORE_NETWORK = 0;
     
@@ -35,7 +36,7 @@ class CoreNetwork {
         std::unordered_map<int, UE*> activeUEConnections;    //stores UE pointers of simulation
         std::unordered_map<int, int> dl_TEIDs;  //UE ID maps to TEID
         std::unordered_map<int, int> ul_TEIDs;  //TEID maps to UE ID
-        std::unordered_map<int, int> ue_gNb_connection; //key: ue DL TEID, value: gNB ID it is connected to
+        std::unordered_map<int, int> ue_gNb_connection; //key: ue ID, value: gNB ID it is connected to
         //std::priority_queue<Packet> packetsFrom_gNB;
         //int id;
         //void registerUE(std::unique_ptr<UE>);

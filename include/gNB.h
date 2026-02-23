@@ -27,7 +27,7 @@ class gNB : public Node {
         gNB(int,int,int);
         ~gNB();
         void connectUE(UE*);
-        void disconnectUE(UE*);
+        void disconnectUE(int);
         void recievePacket(std::unique_ptr<Packet>);
         void recievePacket(std::unique_ptr<GTPPacket>);
         void establishConnectionToCore(CoreNetwork*);
