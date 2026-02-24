@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <ctime>
 #include <cmath>
+#include <random>
 
 Utils::Utils(){
 
@@ -27,27 +28,28 @@ int Utils::generateID(const int type) { //move this to NetworkSimulator
     return 0;
     
 }
-
+*/
 
 std::pair<int,int> Utils::generateCoordinates(){    //Move this to NetworkSimulator
     int x {rand() % 101};
     int y {rand() % 101};
 
     std::pair<int, int> coordinates {x, y};
-
-    while(!existingCoordinates.insert(coordinates).second){
-        x = {rand() % 101};
-        y = {rand() % 101};
-        coordinates = {x, y};
-    }
-
+    
     return coordinates;
 }
-*/
+
 
 float Utils::calculateDistance(const Node& UE, const Node& gNB) const {
     auto [x1, y1] = UE.getLocation();
     auto [x2, y2] = gNB.getLocation();
     
     return std::sqrt(((x2-x1)*(x2-x1)) + ((y2-y1)*(y2-y1)));
+}
+
+int Utils::generateRandNum(int start, int end){
+    std::random_device rd; 
+    std::mt19937 gen(rd()); 
+    std::uniform_int_distribution<> distrib(start, end); // Range [start, end]
+    return distrib(gen);
 }

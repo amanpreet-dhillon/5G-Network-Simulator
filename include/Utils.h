@@ -11,9 +11,10 @@ class Utils{
     public:
         Utils();
         ~Utils();
-        int generateID(const int);  //move to NetoworkSimulator
-        std::pair<int,int> generateCoordinates();   //move to NetoworkSimulator
+        static int generateID(const int);  //move to NetoworkSimulator
+        static std::pair<int,int> generateCoordinates();   //move to NetoworkSimulator
         float calculateDistance(const Node&, const Node&) const;
+        static int generateRandNum(int, int);
     
     private:
         /*
