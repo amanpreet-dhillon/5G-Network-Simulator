@@ -18,7 +18,7 @@ class UE : public Node {
         UE(int, int, int);
         ~UE();
         void recievePacket(std::unique_ptr<Packet>);
-        void turnOn(std::vector<gNB*>);
+        void turnOn(const std::vector<gNB*>&);
         void turnOff();
         void sendPacket(int, PacketType, const std::string&, int);  //just for sending DATA
         //void tester_addPacketToReQueue(int, int);

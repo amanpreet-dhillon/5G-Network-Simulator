@@ -6,6 +6,7 @@
 #include "gNB.h"
 #include <vector>
 #include "CoreNetwork.h"
+#include "NetworkSimulator.h"
 
 int main() {
 
@@ -13,6 +14,13 @@ int main() {
 
     //std::cout << "C++ version: " << __cplusplus << std::endl;
 
+
+    NetworkSimulator simulator;
+
+    simulator.setupSimulation();
+
+
+    /*
     CoreNetwork* coreNetwork = new CoreNetwork();
 
 
@@ -57,6 +65,8 @@ int main() {
     ueObservers[1]->turnOff();
 
     ueObservers[0]->sendPacket(1002, PacketType::DATA, std::string("sending a packet to non existing UE"), 0);
+
+    */
 
 
     // UE testUE{1001, 5, 5};

@@ -18,7 +18,7 @@ UE::~UE(){
     
 }
 
-void UE::turnOn(std::vector<gNB*> gNBList){
+void UE::turnOn(const std::vector<gNB*>& gNBList){
     
     if(!this->active){
         active = true;
