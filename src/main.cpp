@@ -17,7 +17,7 @@ int main() {
 
     NetworkSimulator simulator;
 
-    simulator.setupSimulation();
+    simulator.startSimulation(5);
 
 
     /*

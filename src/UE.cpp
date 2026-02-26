@@ -57,8 +57,7 @@ void UE::turnOff(){
 void UE::recievePacket(std::unique_ptr<Packet> recievedPacket){    //recieve packets and check for ACK
 
 
-    //printing packet (for testing mostly)
-    std::cout << "UE Recieving: " << recievedPacket->print() << std::endl;
+    
 
     if(active and !inNetwork){  //UE is on but needs to be registered.
         
@@ -94,6 +93,9 @@ void UE::recievePacket(std::unique_ptr<Packet> recievedPacket){    //recieve pac
         } else if(recievedPacket->getPacketType() == PacketType::DATA) {    //recieved a DATA packet, check and verify seq
                 
             if (recievedPacket->getSequenceNum() == receievedPacketSeq){   //got expected packet, send ACK, update the seq for that source
+
+                //printing packet (for testing mostly)
+                //std::cout << recievedPacket->print() << std::endl;
                 
                 sendPacket(connected_gNB->getID(), receievedPacketSeq, PacketType::ACK, std::string("Recieved Packet #" + std::to_string(receievedPacketSeq) + " from source #" + std::to_string(recievedPacket->getSource())), 1); //send ACk for packet recieved
 
@@ -206,3 +208,12 @@ void UE::tester_addPacketToReQueue(int ue_id, int seq){
     
 }
 */
+
+void UE::generateTraffic(int destination, const std::string& data){
+
+    int generatePaket = util.generateRandNum(1, 10);
+
+    if(active and generatePaket <= 7){  //70% change to generate packet
+        sendPacket(destination, PacketType::DATA, data, 0);
+    }
+}

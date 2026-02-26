@@ -62,7 +62,7 @@ void CoreNetwork::removeUE(int ueID) {
 void CoreNetwork::recievePacket(std::unique_ptr<GTPPacket> packet){
 
     //unwrap packet
-    std::cout << "core network Recieving: " << packet->payload->print() << std::endl;
+    //std::cout << "core network Recieving: " << packet->payload->print() << std::endl;
 
     int destination {packet->payload->getDestination()};
 
@@ -127,7 +127,7 @@ void CoreNetwork::recievePacket(std::unique_ptr<GTPPacket> packet){
             // Log that UE has sent it has ACK the registration
         } else if (packet->payload->getPacketType() == PacketType::DEREGISTRATION_REQUEST){
             removeUE(packet->payload->getSource());
-            std::cout << "DEREGESTERING UE# " << std::to_string(packet->payload->getSource()) << std::endl;
+            //std::cout << "DEREGESTERING UE# " << std::to_string(packet->payload->getSource()) << std::endl;
         }
 
     } else if (destination >= 1001 and destination <= 1999){ //destination is UE and exists in network
