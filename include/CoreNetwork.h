@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include "Internet.h"
 
 class gNB;
 
@@ -44,6 +45,7 @@ class CoreNetwork {
         void forwardPacketToUE(int, std::unique_ptr<Packet>);
         bool AMF_authenticateUE(int, const std::string&);
         std::vector<std::string> split(const std::string&, char);
+        Internet internet;
 
 
 };

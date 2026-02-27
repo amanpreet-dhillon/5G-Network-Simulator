@@ -3,7 +3,7 @@
 #include <random>
 #include <chrono>
 #include <iostream>
-
+#include "Utils.h"
 
 CoreNetwork::CoreNetwork(){
     //id = 0;
@@ -76,16 +76,14 @@ void CoreNetwork::recievePacket(std::unique_ptr<GTPPacket> packet){
 
     if(destination == INTERNET and packet->payload->getPacketType() == PacketType::DATA){   //Packet should be data related
         //DO SOMETHING
-        
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<> dis(1, 2);
+        int randomNum = Utils::generateRandNum(1, 2);
 
-        int randomNum = dis(gen);
+        internet.recieveData(packet->payload->getData());
 
         if (randomNum == 1){    //send back a packet to Source UE
 
-            auto packetToSend = Packet::createPacket(INTERNET, packet->payload->getSource(), 9999, PacketType::DATA, std::string("Hi this is the Internet!"), 0);
+           
+            auto packetToSend = Packet::createPacket(INTERNET, packet->payload->getSource(), 9999, PacketType::DATA, internet.getRandomResponse(), 0);
             forwardPacketToUE(packet->payload->getSource(), std::move(packetToSend));
 
         } else {
