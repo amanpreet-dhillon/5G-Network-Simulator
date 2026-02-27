@@ -158,7 +158,7 @@ void NetworkSimulator::displayGrid(){
         int row = offset - gnb->getLocation().second;
 
         if (row >= 0 && row < 20 && col >= 0 && col < 20){
-            grid[row][col] = "g"; //+ std::to_string(gnb->getID());
+            grid[row][col] = "g" + std::to_string(gnb->getID()).substr(2);
         }
     }
 
@@ -167,7 +167,7 @@ void NetworkSimulator::displayGrid(){
         int row = offset - ue->getLocation().second;
 
         if (row >= 0 && row < 20 && col >= 0 && col < 20){
-            grid[row][col] = "U"; //+ std::to_string(ue->getID());
+            grid[row][col] = "U" + std::to_string(ue->getID()).substr(2);
         }
     }
 
