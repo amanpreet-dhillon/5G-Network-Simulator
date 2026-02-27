@@ -213,7 +213,7 @@ void UE::generateTraffic(int destination, const std::string& data){
 
     int generatePaket = util.generateRandNum(1, 10);
 
-    if(active and generatePaket <= 7){  //70% change to generate packet
-        sendPacket(destination, PacketType::DATA, data, 0);
+    if(active and generatePaket <= 7){  //can change to add variance to package sent rate
+        sendPacket(destination, PacketType::DATA, std::string("This is a packet from UE ") + std::to_string(this->getID()) + std::string(" to ") + std::to_string(destination), 0);
     }
 }

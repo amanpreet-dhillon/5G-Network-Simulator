@@ -44,15 +44,15 @@ void NetworkSimulator::startSimulation(int totalTicks){
                 if (ue){
 
                     int isGoingToInternet = Utils::generateRandNum(0, 1);
-                    int destinationUE {};
+                    int destination {};
 
                     if(isGoingToInternet == 1){ //50% chance packet is going to INTERNET
-                        destinationUE = 9999;
+                        destination = 9999;
                     } else {
-                        destinationUE = 1000 + Utils::generateRandNum(1, UEObservers.size());
+                        destination = 1000 + Utils::generateRandNum(1, UEObservers.size());
                     }
 
-                    ue->generateTraffic(destinationUE, std::string("I AM A PACKET!!!!"));
+                    ue->generateTraffic(destination, std::string("I AM A PACKET!!!!"));
                 }
             }
 
