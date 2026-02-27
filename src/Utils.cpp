@@ -31,8 +31,8 @@ int Utils::generateID(const int type) { //move this to NetworkSimulator
 */
 
 std::pair<int,int> Utils::generateCoordinates(){    //Move this to NetworkSimulator
-    int x {rand() % 101};
-    int y {rand() % 101};
+    int x {generateRandNum(-10,9)};
+    int y {generateRandNum(-10,9)};
 
     std::pair<int, int> coordinates {x, y};
     
@@ -48,8 +48,8 @@ float Utils::calculateDistance(const Node& UE, const Node& gNB) const {
 }
 
 int Utils::generateRandNum(int start, int end){
-    std::random_device rd; 
-    std::mt19937 gen(rd()); 
+    static std::random_device rd; 
+    static std::mt19937 gen(rd()); 
     std::uniform_int_distribution<> distrib(start, end); // Range [start, end]
     return distrib(gen);
 }

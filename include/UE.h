@@ -20,7 +20,8 @@ class UE : public Node {
         void recievePacket(std::unique_ptr<Packet>);
         void turnOn(const std::vector<gNB*>&);
         void turnOff();
-        void sendPacket(int, PacketType, const std::string&, int);  //just for sending DATA
+        
+        void generateTraffic(int, const std::string&);
         //void tester_addPacketToReQueue(int, int);
 
     private:
@@ -35,7 +36,8 @@ class UE : public Node {
         std::map<int, std::unique_ptr<Packet>> buffer;  //stores out-of-order/'future' packets until they can be processsed
         void bufferCleanUp(int);
         void setupRegistrationReq();
-        void sendPacket(int, int, PacketType, const std::string&, int);
+        void sendPacket(int, int, PacketType, const std::string&, int); //for ACK, NACK, SKIP
+        void sendPacket(int, PacketType, const std::string&, int);  //just for sending DATA
 
 
         

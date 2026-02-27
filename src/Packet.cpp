@@ -60,35 +60,52 @@ const std::string Packet::print() const{
     std::string packType;
     switch (type)
     {
-    case PacketType::REGISTRATION_REQUEST: packType =  "REGISTRATION REQUEST"; break;
-    case PacketType::REGISTRATION_COMPLETE: packType =  "REGISTRATION COMPLETE"; break;
-    case PacketType::REGISTRATION_ACK: packType =  "REGISTRATION ACKNOWLEDGED"; break;
-    case PacketType::DEREGISTRATION_REQUEST: packType =  "DEREGISTRATION REQUEST"; break;
-    case PacketType::DATA: packType =  "DATA"; break;
-    case PacketType::ACK: packType =  "ACK"; break;
-    case PacketType::NACK: packType =  "NACK"; break;
-    case PacketType::SKIP: packType =  "SKIP"; break;
-     
+        case PacketType::REGISTRATION_REQUEST: packType =  "REGISTRATION REQUEST"; break;
+        case PacketType::REGISTRATION_COMPLETE: packType =  "REGISTRATION COMPLETE"; break;
+        case PacketType::REGISTRATION_ACK: packType =  "REGISTRATION ACKNOWLEDGED"; break;
+        case PacketType::DEREGISTRATION_REQUEST: packType =  "DEREGISTRATION REQUEST"; break;
+        case PacketType::DATA: packType =  "DATA"; break;
+        case PacketType::ACK: packType =  "ACK"; break;
+        case PacketType::NACK: packType =  "NACK"; break;
+        case PacketType::SKIP: packType =  "SKIP"; break;
         
-    default: packType =  "UNKNOWN"; break;
+            
+        default: packType =  "UNKNOWN"; break;
     }
 
+    std::string source;
+    if(sourceID == 0){
+        source = "CORE_NETWORK";
+    } else if (sourceID == 9999){
+        source = "INTERNET";
+    } else {
+        source = std::to_string(sourceID);
+    }
+
+    std::string destination;
+    if(destinationID == 0){
+        destination = "CORE NETWORK";
+    } else if (destinationID == 9999){
+        destination = "INTERNET";
+    } else {
+        destination = std::to_string(destinationID);
+    }
 
     std::string priType;
     switch (priority)
     {
-    case -1: priType =  "LOW"; break;
-    case 0: priType =  "NEUTRAL"; break;
-    case 1: priType =  "HIGH"; break;
-        
-    default: priType =  "NEUTRAL"; break;
+        case -1: priType =  "LOW"; break;
+        case 0: priType =  "NEUTRAL"; break;
+        case 1: priType =  "HIGH"; break;
+            
+        default: priType =  "NEUTRAL"; break;
     }
 
 
     std::stringstream output;
 
     output  << "[" << getTimestamp() << "]: "
-            << "[ROUTE: " << sourceID << " ---> " << destinationID << "] "
+            << "[ROUTE: " << source << " ---> " << destination << "] "
             << "[SEQUENCE: " << sequenceNumber << "] "
             << "[TYPE: " << packType << "] "
             << "[PRIORITY: " << priType << "] "

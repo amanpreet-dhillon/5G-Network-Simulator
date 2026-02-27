@@ -11,8 +11,8 @@ class NetworkSimulator {
     public:
         NetworkSimulator();
         ~NetworkSimulator();
-        void setupSimulation();
-        void startSimulation();
+        
+        void startSimulation(int);
         void endSimulation();
 
     private:
@@ -28,13 +28,16 @@ class NetworkSimulator {
         void setupUEs();
         void turnOnUEs();
         void turnOffUEs();
-
+        void setupSimulation();
+        void setupGrid();
+        void displayGrid();
 
         int currgNBID = 5000;
         int currUEID = 1000;
+        bool simulationOn;
 
         CoreNetwork* coreNetwork;
-        //std::vector<std::vector<int>> grid(100, std::vector<int>(100,0));
+       
 
 
 };
