@@ -37,7 +37,7 @@ void NetworkSimulator::startSimulation(int totalTicks){
         //setupGrid();
         //displayGrid();
 
-        std::string logInfo = " Simulation has begun. \n\n\n";
+        std::string logInfo = "\n\n\n\n Simulation has begun. \n\n\n";
         Logger::getInstance().logOther(7, logInfo);
 
         for (int currTick = 0; currTick < totalTicks; currTick++){

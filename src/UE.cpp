@@ -78,21 +78,21 @@ void UE::recievePacket(std::unique_ptr<Packet> recievedPacket){    //recieve pac
 
     } else if (active and inNetwork){   //UE needs to be on and connected to the network
 
-        Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());    
+            
         
         if(recievedPacket->getPacketType() == PacketType::ACK){     //got ACK, remove from retransmissionQueue
-        
+            //Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());
             if(retransmissionQueue.find(recievedPacket->getSequenceNum()) != retransmissionQueue.end()){    //check if the packet exists in retransmissionQueue
                 retransmissionQueue.erase(recievedPacket->getSequenceNum());
             }
 
         } else if (recievedPacket->getPacketType() == PacketType::SKIP){    //gNB could not find specified packet, assume it is lost and move to next sequence
-            
+            Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());
             receievedPacketSeq= std::max(receievedPacketSeq+1, recievedPacket->getSequenceNum()+1);;
             bufferCleanUp(receievedPacketSeq);
 
         } else if (recievedPacket->getPacketType() == PacketType::NACK){    //gNB is requesting for a missing packet, send if found, else tell it to skip 
-            
+            Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());
             if (retransmissionQueue.find(recievedPacket->getSequenceNum()) != retransmissionQueue.end()){
                 std::unique_ptr<Packet> packetToSend = std::make_unique<Packet>(*retransmissionQueue[recievedPacket->getSequenceNum()]); //copy via copy constructor
                 connected_gNB->recievePacket(std::move(packetToSend));
@@ -103,7 +103,7 @@ void UE::recievePacket(std::unique_ptr<Packet> recievedPacket){    //recieve pac
 
 
         } else if(recievedPacket->getPacketType() == PacketType::DATA) {    //recieved a DATA packet, check and verify seq
-                
+            Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());  
             if (recievedPacket->getSequenceNum() == receievedPacketSeq){   //got expected packet, send ACK, update the seq for that source
 
                 //printing packet (for testing mostly)
@@ -147,7 +147,7 @@ void UE::sendPacket(int destinationID, int expectedSeq, PacketType packetType, c
 
             std::unique_ptr<Packet> packetToSend = Packet::createPacket(this->getID(), destinationID, expectedSeq, packetType, data, prio); 
             
-            Logger::getInstance().logPacketSent(this->getID(), packetToSend->print());
+            //Logger::getInstance().logPacketSent(this->getID(), packetToSend->print());
             connected_gNB->recievePacket(std::move(packetToSend));   
 
         } else if (packetType == PacketType::NACK) {    //sending NACK

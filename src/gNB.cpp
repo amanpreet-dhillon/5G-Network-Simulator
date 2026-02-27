@@ -44,7 +44,7 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
 
     if(ueRegistery.count(recievedPacket->getSource())){
 
-        Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());    
+            
 
         auto sourceUE = ueRegistery.find(recievedPacket->getSource());
 
@@ -54,13 +54,13 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
         auto& retransmissionQueue = sourceUE->second->retransmissionQueue;
 
         if (recievedPacket->getPacketType() == PacketType::ACK){
-
+            //Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());
             if(retransmissionQueue.find(recievedPacket->getSequenceNum()) != retransmissionQueue.end()){    //check if the packet exists in retransmissionQueue
                 retransmissionQueue.erase(recievedPacket->getSequenceNum());
             }
 
         } else if (recievedPacket->getPacketType() == PacketType::NACK) {   //For NACK, UE will switch source and destination s.t. the source is now source of original packet (not the currently sending UE) and destination is the original recieving UE (the one sending the NACK)
-
+            Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());
             if (retransmissionQueue.find(recievedPacket->getSequenceNum()) != retransmissionQueue.end()){
 
                 std::unique_ptr<Packet> packetToSend = std::make_unique<Packet>(*retransmissionQueue[recievedPacket->getSequenceNum()]); //copy via copy constructor
@@ -74,12 +74,12 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
             }
 
         } else if (recievedPacket->getPacketType() == PacketType::SKIP) {
-
+            Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());
             sourceUE->second->expectedULSeq = std::max(sourceUE->second->expectedULSeq + 1, recievedPacket->getSequenceNum() + 1);
             bufferCleanUp(recievedPacket->getSource());
             
         } else if (recievedPacket->getPacketType() == PacketType::DATA){
-
+            Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());
             int& expectedSeq = sourceUE->second->expectedULSeq;
             
             if (recievedPacket->getSequenceNum() == expectedSeq){   //got expected packet, send ACK, update the seq for that source
@@ -166,7 +166,7 @@ void gNB::sendPacket(int sourceID, int destID, int seq, PacketType pType, const 
         if (pType == PacketType::ACK){
             std::unique_ptr<Packet> packetToSend = Packet::createPacket(this->getID(), destID, seq, pType, data, prio);
 
-            Logger::getInstance().logPacketSent(this->getID(), packetToSend->print());
+            //Logger::getInstance().logPacketSent(this->getID(), packetToSend->print());
             ueRegistery[destID]->ue->recievePacket(std::move(packetToSend));
         } else if (pType == PacketType::NACK){
             std::unique_ptr<Packet> packetToSend = Packet::createPacket(this->getID(), destID, seq, pType, data, prio);
