@@ -5,6 +5,7 @@
 #include <chrono>
 #include <thread>
 #include <iomanip>
+#include "Logger.h"
 
 NetworkSimulator::NetworkSimulator(){
 
@@ -35,6 +36,9 @@ void NetworkSimulator::startSimulation(int totalTicks){
 
         //setupGrid();
         //displayGrid();
+
+        std::string logInfo = " Simulation has begun. \n\n\n";
+        Logger::getInstance().logOther(7, logInfo);
 
         for (int currTick = 0; currTick < totalTicks; currTick++){
 
@@ -77,7 +81,9 @@ void NetworkSimulator::setupSimulation(){
         coreNetwork->loadEquipment(std::move(equipment_gNBs), std::string("gNB"));
         coreNetwork->loadEquipment(std::move(equipment_UEs), std::string("UE"));
 
-        
+
+        std::string logInfo = " Simulation has been setup with " + std::to_string(UEObservers.size()) + " UEs and " + std::to_string(gNBObservers.size()) + " gNBs.";
+        Logger::getInstance().logOther(7, logInfo);
     }
     
 }
