@@ -43,6 +43,7 @@ class CoreNetwork {
         //void registerUE(std::unique_ptr<UE>);
         //void registergNB(std::unique_ptr<gNB>);
         void forwardPacketToUE(int, std::unique_ptr<Packet>);
+        void moveUE(int, int);
         bool AMF_authenticateUE(int, const std::string&);
         std::vector<std::string> split(const std::string&, char);
         Internet internet;

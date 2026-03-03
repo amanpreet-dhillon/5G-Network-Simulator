@@ -21,4 +21,9 @@ std::pair<int, int> Node::getLocation() const{
     return std::pair{x,y};
 }
 
+void Node::updateLocation(int xCoord, int yCoord)
+{
+    x = xCoord;
+    y = yCoord;
+}
 

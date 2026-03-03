@@ -13,6 +13,7 @@ class Node {
         int getID(); 
         std::pair<int,int> getLocation() const;
         static const int CORE_NETWORK = 0;
+        void updateLocation(int, int);
 
     
     private:

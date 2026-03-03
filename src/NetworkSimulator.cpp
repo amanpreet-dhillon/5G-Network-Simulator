@@ -60,6 +60,24 @@ void NetworkSimulator::startSimulation(int totalTicks){
                     }
 
                     ue->generateTraffic(destination, std::string("I AM A PACKET!!!!"));
+
+                    int willMove = Utils::generateRandNum(1, 100);
+                    if(willMove <= 10){ //move current UE
+                        
+                        std::pair UECoords = Utils::generateCoordinates();
+                        while (takenCoords.find(UECoords) != takenCoords.end()){   //keep generating new coords until a free space is generated
+                            UECoords = Utils::generateCoordinates();
+                        }
+                        
+                        auto oldCoords = ue->getLocation();
+                        takenCoords.erase(oldCoords);
+                        
+                        ue->moveUE(UECoords.first, UECoords.second, gNBObservers);
+                        takenCoords.insert(UECoords);
+
+
+                    }
+
                 }
             }
 
