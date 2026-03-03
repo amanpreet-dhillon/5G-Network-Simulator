@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <string>
+#include "Logger.h"
 
 gNB::gNB(int givenID, int xcord, int ycord) : Node(givenID, xcord, ycord){
     ul_TEIDs[0] = std::stoi(std::to_string(this->getID()) + std::to_string(0));    //CORE NETWORK
@@ -42,6 +43,9 @@ void gNB::disconnectUE(int ueID){
 void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will come from a UE, if DATA or registration related then wrap and forward to Core Network, else other handles (UL)
 
     if(ueRegistery.count(recievedPacket->getSource())){
+
+            
+
         auto sourceUE = ueRegistery.find(recievedPacket->getSource());
 
         //std::cout  << recievedPacket->print() << std::endl;
@@ -50,13 +54,13 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
         auto& retransmissionQueue = sourceUE->second->retransmissionQueue;
 
         if (recievedPacket->getPacketType() == PacketType::ACK){
-
+            //Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());
             if(retransmissionQueue.find(recievedPacket->getSequenceNum()) != retransmissionQueue.end()){    //check if the packet exists in retransmissionQueue
                 retransmissionQueue.erase(recievedPacket->getSequenceNum());
             }
 
         } else if (recievedPacket->getPacketType() == PacketType::NACK) {   //For NACK, UE will switch source and destination s.t. the source is now source of original packet (not the currently sending UE) and destination is the original recieving UE (the one sending the NACK)
-
+            Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());
             if (retransmissionQueue.find(recievedPacket->getSequenceNum()) != retransmissionQueue.end()){
 
                 std::unique_ptr<Packet> packetToSend = std::make_unique<Packet>(*retransmissionQueue[recievedPacket->getSequenceNum()]); //copy via copy constructor
@@ -70,12 +74,12 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
             }
 
         } else if (recievedPacket->getPacketType() == PacketType::SKIP) {
-
+            Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());
             sourceUE->second->expectedULSeq = std::max(sourceUE->second->expectedULSeq + 1, recievedPacket->getSequenceNum() + 1);
             bufferCleanUp(recievedPacket->getSource());
             
         } else if (recievedPacket->getPacketType() == PacketType::DATA){
-
+            Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());
             int& expectedSeq = sourceUE->second->expectedULSeq;
             
             if (recievedPacket->getSequenceNum() == expectedSeq){   //got expected packet, send ACK, update the seq for that source
@@ -119,6 +123,8 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
 void gNB::recievePacket(std::unique_ptr<GTPPacket> data){    //this will come from Core Netwwork, unwrap, send to destination UE (DL)    
     //std::cout << "gnb Recieving: " << data->payload->print() << std::endl;
 
+    Logger::getInstance().logPacketRecieved(this->getID(), data->payload->print());
+
     //unwrapping packet
     int destinationUE = dl_TEIDs[data->TEID];   
     sendPacket(destinationUE, std::move(data->payload));   
@@ -130,13 +136,17 @@ void gNB::forwardToCore(std::unique_ptr<Packet> packetToForward){
         //wrapping packet
         auto wrappedPacket = std::make_unique<GTPPacket>();
         wrappedPacket->TEID = ul_TEIDs[0];  //destination must be core network
-        wrappedPacket->payload = std::move(packetToForward);    
+        wrappedPacket->payload = std::move(packetToForward);
+        
+        Logger::getInstance().logPacketSent(this->getID(), wrappedPacket->payload->print());
         coreNetwork->recievePacket(std::move(wrappedPacket));
     } else {
         //wrapping packet
         auto wrappedPacket = std::make_unique<GTPPacket>();
         wrappedPacket->TEID = ul_TEIDs[packetToForward->getSource()]; 
         wrappedPacket->payload = std::move(packetToForward);    
+        
+        Logger::getInstance().logPacketSent(this->getID(), wrappedPacket->payload->print());
         coreNetwork->recievePacket(std::move(wrappedPacket));
     }
     
@@ -150,14 +160,23 @@ void gNB::establishConnectionToCore(CoreNetwork* cN){
 void gNB::sendPacket(int sourceID, int destID, int seq, PacketType pType, const std::string& data, int prio=0){   //used for ACK/NACK/SKIP related packets
 
     if (ueRegistery.count(destID)){
+
+        
+
         if (pType == PacketType::ACK){
             std::unique_ptr<Packet> packetToSend = Packet::createPacket(this->getID(), destID, seq, pType, data, prio);
+
+            //Logger::getInstance().logPacketSent(this->getID(), packetToSend->print());
             ueRegistery[destID]->ue->recievePacket(std::move(packetToSend));
         } else if (pType == PacketType::NACK){
             std::unique_ptr<Packet> packetToSend = Packet::createPacket(this->getID(), destID, seq, pType, data, prio);
+            
+            Logger::getInstance().logPacketSent(this->getID(), packetToSend->print());
             ueRegistery[destID]->ue->recievePacket(std::move(packetToSend));
         } else if (pType == PacketType::SKIP){
             std::unique_ptr<Packet> packetToSend = Packet::createPacket(this->getID(), destID, seq, pType, data, prio);
+            
+            Logger::getInstance().logPacketSent(this->getID(), packetToSend->print());
             ueRegistery[destID]->ue->recievePacket(std::move(packetToSend));
         }
     }
@@ -175,10 +194,13 @@ void gNB::sendPacket(int destID, std::unique_ptr<Packet> packet){ //used for sen
             std::unique_ptr<Packet> packetToStore = std::make_unique<Packet>(*packet);
             ueRegistery[destID]->retransmissionQueue[ueRegistery[destID]->nextDLSeq] = std::move(packetToStore);   
             
+            Logger::getInstance().logPacketSent(this->getID(), packet->print());
             //send packet to UE
             ueRegistery[destID]->ue->recievePacket(std::move(packet));
 
         } else {    //for registration reltaed packets
+
+            Logger::getInstance().logPacketSent(this->getID(), packet->print());
             ueRegistery[destID]->ue->recievePacket(std::move(packet));
         }
 

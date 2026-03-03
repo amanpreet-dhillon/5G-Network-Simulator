@@ -104,8 +104,7 @@ const std::string Packet::print() const{
 
     std::stringstream output;
 
-    output  << "[" << getTimestamp() << "]: "
-            << "[ROUTE: " << source << " ---> " << destination << "] "
+    output  << "[ROUTE: " << source << " ---> " << destination << "] "
             << "[SEQUENCE: " << sequenceNumber << "] "
             << "[TYPE: " << packType << "] "
             << "[PRIORITY: " << priType << "] "

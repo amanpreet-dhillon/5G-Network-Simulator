@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <iostream>
 #include "Utils.h"
+#include "Logger.h"
 
 Internet::Internet(){
 
@@ -25,6 +26,7 @@ Internet::Internet(){
 Internet::~Internet(){
     if (inputFile.is_open()) {inputFile.close();}
     if (outputFile.is_open()) {outputFile.close();}
+    internetLines.clear();
 }
 
 

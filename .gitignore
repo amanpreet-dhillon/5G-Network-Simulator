@@ -5,3 +5,4 @@
 #ignore these directories
 /build
 /bin
+/output

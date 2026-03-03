@@ -31,8 +31,8 @@ int Utils::generateID(const int type) { //move this to NetworkSimulator
 */
 
 std::pair<int,int> Utils::generateCoordinates(){    //Move this to NetworkSimulator
-    int x {generateRandNum(-10,9)};
-    int y {generateRandNum(-10,9)};
+    int x {generateRandNum(-9,9)};
+    int y {generateRandNum(-9,9)};
 
     std::pair<int, int> coordinates {x, y};
     

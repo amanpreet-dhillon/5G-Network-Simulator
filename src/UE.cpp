@@ -5,6 +5,7 @@
 #include <iostream>
 #include <limits>
 #include <algorithm>
+#include "Logger.h"
 
 UE::UE(int givenID, int xCoord, int yCoord) : Node(givenID, xCoord, yCoord){
     connected_gNB = nullptr;
@@ -21,6 +22,9 @@ UE::~UE(){
 void UE::turnOn(const std::vector<gNB*>& gNBList){
     
     if(!this->active){
+
+        Logger::getInstance().logOther(this->getID(), std::string(" has been turned on."));
+
         active = true;
         float currDistance = std::numeric_limits<float>::max();
 
@@ -33,8 +37,10 @@ void UE::turnOn(const std::vector<gNB*>& gNBList){
 
         if(connected_gNB){  //ADD error handling if no gnb is connected
             connected_gNB->connectUE(this); //just for testing, remove after
-            //std::cout << "connected to gNB# " << connected_gNB->getID() << std::endl;
             setupRegistrationReq();
+        } else {
+            active = false;
+            inNetwork = false;
         }
     }
 
@@ -44,6 +50,8 @@ void UE::turnOn(const std::vector<gNB*>& gNBList){
 
 void UE::turnOff(){
     if(this->active){
+        Logger::getInstance().logOther(this->getID(), std::string(" has been turned off and disconnected."));
+
         sendPacket(CORE_NETWORK, 0, PacketType::DEREGISTRATION_REQUEST, std::string("UE #" + std::to_string(this->getID()) + " is disconnecting from network"), 1);
         active = false;
         inNetwork = false;
@@ -56,31 +64,35 @@ void UE::turnOff(){
  
 void UE::recievePacket(std::unique_ptr<Packet> recievedPacket){    //recieve packets and check for ACK
 
-
-    
-
+   
     if(active and !inNetwork){  //UE is on but needs to be registered.
         
-        if (recievedPacket->getPacketType() == PacketType::REGISTRATION_COMPLETE) {   //registration COMPLETE by core network, confirm using ACK 
+        //Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());    
+
+        if (recievedPacket->getPacketType() == PacketType::REGISTRATION_COMPLETE) {   //registration COMPLETE by core network, confirm using ACK
+            Logger::getInstance().logOther(this->getID(), std::string(" is now connected to the network."));
+            
             inNetwork = true;
             sendPacket(CORE_NETWORK, 0, PacketType::REGISTRATION_ACK, std::string("Registration Acknowledged by UE #" + std::to_string(this->getID())), 1);
         }
 
     } else if (active and inNetwork){   //UE needs to be on and connected to the network
 
-        if(recievedPacket->getPacketType() == PacketType::ACK){     //got ACK, remove from retransmissionQueue
+            
         
+        if(recievedPacket->getPacketType() == PacketType::ACK){     //got ACK, remove from retransmissionQueue
+            //Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());
             if(retransmissionQueue.find(recievedPacket->getSequenceNum()) != retransmissionQueue.end()){    //check if the packet exists in retransmissionQueue
                 retransmissionQueue.erase(recievedPacket->getSequenceNum());
             }
 
         } else if (recievedPacket->getPacketType() == PacketType::SKIP){    //gNB could not find specified packet, assume it is lost and move to next sequence
-            
+            Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());
             receievedPacketSeq= std::max(receievedPacketSeq+1, recievedPacket->getSequenceNum()+1);;
             bufferCleanUp(receievedPacketSeq);
 
         } else if (recievedPacket->getPacketType() == PacketType::NACK){    //gNB is requesting for a missing packet, send if found, else tell it to skip 
-            
+            Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());
             if (retransmissionQueue.find(recievedPacket->getSequenceNum()) != retransmissionQueue.end()){
                 std::unique_ptr<Packet> packetToSend = std::make_unique<Packet>(*retransmissionQueue[recievedPacket->getSequenceNum()]); //copy via copy constructor
                 connected_gNB->recievePacket(std::move(packetToSend));
@@ -91,7 +103,7 @@ void UE::recievePacket(std::unique_ptr<Packet> recievedPacket){    //recieve pac
 
 
         } else if(recievedPacket->getPacketType() == PacketType::DATA) {    //recieved a DATA packet, check and verify seq
-                
+            Logger::getInstance().logPacketRecieved(this->getID(), recievedPacket->print());  
             if (recievedPacket->getSequenceNum() == receievedPacketSeq){   //got expected packet, send ACK, update the seq for that source
 
                 //printing packet (for testing mostly)
@@ -122,34 +134,48 @@ void UE::recievePacket(std::unique_ptr<Packet> recievedPacket){    //recieve pac
 void UE::sendPacket(int destinationID, int expectedSeq, PacketType packetType, const std::string& data, int prio=0){
 
     if(active and !inNetwork){
+
         if (packetType == PacketType::REGISTRATION_REQUEST){
             std::unique_ptr<Packet> registrationPacket = Packet::createPacket(this->getID(), CORE_NETWORK, 0, packetType, data, 1);   //destination 0 is the core network
+            
+            Logger::getInstance().logPacketSent(this->getID(), registrationPacket->print());
             connected_gNB->recievePacket(std::move(registrationPacket));
         }
     } else if (active and inNetwork){
+
         if(packetType == PacketType::ACK){  //just sending ACK, no need to store
 
             std::unique_ptr<Packet> packetToSend = Packet::createPacket(this->getID(), destinationID, expectedSeq, packetType, data, prio); 
+            
+            //Logger::getInstance().logPacketSent(this->getID(), packetToSend->print());
             connected_gNB->recievePacket(std::move(packetToSend));   
 
         } else if (packetType == PacketType::NACK) {    //sending NACK
             
             std::unique_ptr<Packet> packetToSend = Packet::createPacket(this->getID(), destinationID, expectedSeq, packetType, data, prio); 
+            
+            Logger::getInstance().logPacketSent(this->getID(), packetToSend->print());
             connected_gNB->recievePacket(std::move(packetToSend));   
 
         } else if(packetType == PacketType::SKIP) {     //sending SKIP
             
             std::unique_ptr<Packet> packetToSend = Packet::createPacket(this->getID(), destinationID, expectedSeq, packetType, data, prio);
+            
+            Logger::getInstance().logPacketSent(this->getID(), packetToSend->print());
             connected_gNB->recievePacket(std::move(packetToSend));  
     
         } else if (packetType == PacketType::REGISTRATION_ACK){
 
             std::unique_ptr<Packet> registrationPacket = Packet::createPacket(this->getID(), CORE_NETWORK, 0, packetType, data, 1);   //destination 0 is the core network
+            
+            Logger::getInstance().logPacketSent(this->getID(), registrationPacket->print());
             connected_gNB->recievePacket(std::move(registrationPacket));
         
         } else if (packetType == PacketType::DEREGISTRATION_REQUEST){
 
             std::unique_ptr<Packet> deRegistrationPacket = Packet::createPacket(this->getID(), CORE_NETWORK, 0, packetType, data, 1);   //destination 0 is the core network
+            
+            Logger::getInstance().logPacketSent(this->getID(), deRegistrationPacket->print());
             connected_gNB->recievePacket(std::move(deRegistrationPacket));
         }
     }
@@ -167,6 +193,7 @@ void UE::sendPacket(int destinationID, PacketType packetType, const std::string&
 
             retransmissionQueue[sentPacketSeq] = std::move(packetToStore);   
 
+            Logger::getInstance().logPacketSent(this->getID(), packetToSend->print());
             connected_gNB->recievePacket(std::move(packetToSend));
 
         } 
@@ -177,7 +204,9 @@ void UE::sendPacket(int destinationID, PacketType packetType, const std::string&
 void UE::bufferCleanUp(int currSeq){
 
     if(!buffer.empty()){   //check if recieved packet is in buffer
-                    
+        
+        Logger::getInstance().logOther(this->getID(), std::string(" is attempting to use buffer."));
+        
         if(buffer.find(receievedPacketSeq) != buffer.end()){
 
             while(buffer.find(receievedPacketSeq) != buffer.end()){
