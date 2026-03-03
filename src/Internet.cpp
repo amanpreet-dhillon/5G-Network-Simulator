@@ -32,7 +32,6 @@ Internet::~Internet(){
 
 void Internet::recieveData(const std::string& data){
     if(outputFile.is_open()){
-
         outputFile << data << std::endl;
     }
 }

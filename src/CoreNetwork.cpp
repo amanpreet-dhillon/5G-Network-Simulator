@@ -149,7 +149,7 @@ void CoreNetwork::recievePacket(std::unique_ptr<GTPPacket> packet){
 
     } else if (destination >= 1001 and destination <= 1999){ //destination is UE and exists in network
         //log other
-        std::string logInfo = " has recieved a packet from " + std::to_string(packet->payload->getSource()) + " to " + std::to_string(packet->payload->getSource()) + ". Beginning handover process.";
+        std::string logInfo = " has recieved a packet from " + std::to_string(packet->payload->getSource()) + " to " + std::to_string(packet->payload->getSource()) + ". Beginning handover process.\n";
         Logger::getInstance().logOther(0, logInfo);
 
         forwardPacketToUE(destination, std::move(packet->payload));

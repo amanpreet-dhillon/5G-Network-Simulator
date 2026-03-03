@@ -28,7 +28,7 @@ void Logger::logPacketSent(int source, const std::string& data){
     std::lock_guard<std::mutex> lock(logMutex); //mutex to esnure stable writing to file between multiple equipments
 
     if (logOutput.is_open()) {
-        logOutput << "[" << getTimestamp() << "] --- [" << getEquipmentType(source) << "]" << "SENT: " << data << std::endl;
+        logOutput << "[" << getTimestamp() << "] --- [" << getEquipmentType(source) << "]" << " SENT: " << data << std::endl;
     }
 }
 
@@ -37,7 +37,7 @@ void Logger::logPacketRecieved(int source, const std::string& data){
     std::lock_guard<std::mutex> lock(logMutex); //mutex to esnure stable writing to file between multiple equipments
 
     if (logOutput.is_open()) {
-        logOutput << "[" << getTimestamp() << "] --- [" << getEquipmentType(source) << "]" << "RECEIVED: " << data << std::endl;
+        logOutput << "[" << getTimestamp() << "] --- [" << getEquipmentType(source) << "]" << " RECEIVED: " << data << std::endl;
     }
 }
 

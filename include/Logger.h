@@ -4,7 +4,7 @@
 #include <mutex>
 #include <string>
 
-
+//SINGLETON CLASS
 class Logger{
 
     public:

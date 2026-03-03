@@ -42,6 +42,9 @@ void NetworkSimulator::startSimulation(int totalTicks){
 
         for (int currTick = 0; currTick < totalTicks; currTick++){
 
+            Logger::getInstance().logOther(7, std::string("---- TICK: " + std::to_string(currTick) + " ----\n\n"));
+            
+            
             displayGrid();
 
             for(UE* ue : UEObservers){
@@ -60,6 +63,7 @@ void NetworkSimulator::startSimulation(int totalTicks){
                 }
             }
 
+            
             std::this_thread::sleep_for(std::chrono::milliseconds(2000));            
         }
 
@@ -84,6 +88,16 @@ void NetworkSimulator::setupSimulation(){
 
         std::string logInfo = " Simulation has been setup with " + std::to_string(UEObservers.size()) + " UEs and " + std::to_string(gNBObservers.size()) + " gNBs.";
         Logger::getInstance().logOther(7, logInfo);
+
+        for (auto ue : UEObservers){
+            logInfo = " UE " + std::to_string(ue->getID()) + " : [" + std::to_string(ue->getLocation().first) + "," + std::to_string(ue->getLocation().second) + "]\n";
+            Logger::getInstance().logOther(7, logInfo);
+        }
+
+        for (auto gnb : gNBObservers){
+            logInfo = " gNB " + std::to_string(gnb->getID()) + " : [" + std::to_string(gnb->getLocation().first) + "," + std::to_string(gnb->getLocation().second) + "]\n";
+            Logger::getInstance().logOther(7, logInfo);
+        }
     }
     
 }
