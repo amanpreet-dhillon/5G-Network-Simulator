@@ -14,14 +14,11 @@ class Node {
         std::pair<int,int> getLocation() const;
         static const int CORE_NETWORK = 0;
         void updateLocation(int, int);
-
     
     private:
         int id; //UEs will have ID  1XXX, gNBs will have 5XXX, Internet will be 9999
         int x;
         int y;
-        
-
 
 };
 

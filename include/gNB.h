@@ -13,10 +13,8 @@ class UE;
 
 struct UEContext {
     UE* ue = nullptr;   
-    
     int nextDLSeq = 0;
     std::unordered_map<int, std::unique_ptr<Packet>> retransmissionQueue;   //seq, Packet
-    
     int expectedULSeq = 1;
     std::map<int, std::unique_ptr<Packet>> buffer;  //seq, Packet
 };
@@ -28,16 +26,12 @@ class gNB : public Node {
         ~gNB();
         void connectUE(UE*);
         void disconnectUE(int);
-        void removeUE(int);
         void recievePacket(std::unique_ptr<Packet>);
         void recievePacket(std::unique_ptr<GTPPacket>);
         void establishConnectionToCore(CoreNetwork*);
         void recieveUL_TEID(int, int);
-        //void disconnectUE(int);   /remove?
-        void tester_addPacketToReQueue(int, int);
         void sendPacket(int, int, int, PacketType, const std::string&, int);
         void sendPacket(int, std::unique_ptr<Packet>);
-
 
     private:
         std::unordered_map<int, std::unique_ptr<UEContext>> ueRegistery;    //stores all UEContexts currently connected to gNB

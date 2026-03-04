@@ -6,7 +6,16 @@
 #include <ctime>
 
 Logger::Logger(){
-    logOutput.open("./output/SimulationLog.txt");
+
+    //getting current time for log file name
+    auto now = std::chrono::system_clock::now();
+    std::time_t time_t_now = std::chrono::system_clock::to_time_t(now);
+    std::tm* local_tm = std::localtime(&time_t_now);
+
+    //creating string for log file name
+    std::stringstream ss;
+    ss << "./output/log_" << std::put_time(local_tm, "%Y-%m-%d_%H:%M:%S") << ".txt";
+    logOutput.open(ss.str());
 
     if(!logOutput.is_open()){
         std::cerr << "Error: cannot open Simulation.log" << std::endl;

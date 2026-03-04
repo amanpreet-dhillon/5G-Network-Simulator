@@ -20,6 +20,7 @@ NetworkSimulator::~NetworkSimulator(){
    
     UEObservers.clear();
     gNBObservers.clear();
+    if (coreNetwork) {delete coreNetwork;}
     coreNetwork = nullptr;
 }
 
@@ -44,7 +45,6 @@ void NetworkSimulator::startSimulation(int totalTicks){
 
             Logger::getInstance().logOther(7, std::string("---- TICK: " + std::to_string(currTick) + " ----\n\n"));
             
-            
             displayGrid();
 
             for(UE* ue : UEObservers){
@@ -59,10 +59,10 @@ void NetworkSimulator::startSimulation(int totalTicks){
                         destination = 1000 + Utils::generateRandNum(1, UEObservers.size());
                     }
 
-                    ue->generateTraffic(destination, std::string("I AM A PACKET!!!!"));
+                    ue->generateTraffic(destination);
 
                     int willMove = Utils::generateRandNum(1, 100);
-                    if(willMove <= 10){ //move current UE
+                    if(willMove <= 10){ //10% chance to move current UE
                         
                         std::pair UECoords = Utils::generateCoordinates();
                         while (takenCoords.find(UECoords) != takenCoords.end()){   //keep generating new coords until a free space is generated
@@ -75,13 +75,12 @@ void NetworkSimulator::startSimulation(int totalTicks){
                         ue->moveUE(UECoords.first, UECoords.second, gNBObservers);
                         takenCoords.insert(UECoords);
 
-
                     }
 
                 }
             }
 
-            
+            //used for visual display in terminal, comment to get quicker results
             std::this_thread::sleep_for(std::chrono::milliseconds(2000));            
         }
 
@@ -121,7 +120,7 @@ void NetworkSimulator::setupSimulation(){
 }
 
 void NetworkSimulator::setupgNBs(){
-    int numgNBs = Utils::generateRandNum(1,3);
+    int numgNBs = Utils::generateRandNum(1,3);  //generate 1 to 3 gNBs
 
     for (int i = 0; i < numgNBs; i++){
 
@@ -144,7 +143,7 @@ void NetworkSimulator::setupgNBs(){
 
 
 void NetworkSimulator::setupUEs(){
-    int numUEs = Utils::generateRandNum(5,10);
+    int numUEs = Utils::generateRandNum(3,10);  //generate 3 to 10 UEs
 
     for (int i = 0; i < numUEs; i++){
 
@@ -170,11 +169,6 @@ void NetworkSimulator::turnOnUEs(){
         }
     }
 }
-
-void NetworkSimulator::setupGrid(){
-    
-}
-    
 
 void NetworkSimulator::displayGrid(){
 
@@ -234,8 +228,4 @@ void NetworkSimulator::displayGrid(){
         }
         std::cout << "\n";
     }
-    
-
-
-    
 }

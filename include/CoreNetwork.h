@@ -38,10 +38,6 @@ class CoreNetwork {
         std::unordered_map<int, int> dl_TEIDs;  //UE ID maps to TEID
         std::unordered_map<int, int> ul_TEIDs;  //TEID maps to UE ID
         std::unordered_map<int, int> ue_gNb_connection; //key: ue ID, value: gNB ID it is connected to
-        //std::priority_queue<Packet> packetsFrom_gNB;
-        //int id;
-        //void registerUE(std::unique_ptr<UE>);
-        //void registergNB(std::unique_ptr<gNB>);
         void forwardPacketToUE(int, std::unique_ptr<Packet>);
         void moveUE(int, int);
         bool AMF_authenticateUE(int, const std::string&);

@@ -45,9 +45,7 @@ class Packet {
         PacketType type;
         const std::string data;
         int priority;   // -1 = low priority, 0 = neutral priority, 1 = high priority
-        const std::chrono::system_clock::time_point timestamp;
-
-        
+        const std::chrono::system_clock::time_point timestamp;        
 
 };
 

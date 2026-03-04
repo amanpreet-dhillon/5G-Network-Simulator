@@ -20,14 +20,11 @@ void gNB::connectUE(UE* ue){
 
     auto dlTEID = std::stoi(std::to_string(this->getID()) + std::to_string(ue->getID()));
     
-    //int dlTEID = 40000 + ue->getID();
     dl_TEIDs[dlTEID] = ue->getID();
     coreNetwork->recieveDL_TEID(dlTEID, ue->getID());
     auto ueContext = std::make_unique<UEContext>();
     ueContext->ue = ue;
     ueRegistery[ue->getID()] = std::move(ueContext);
-
-    //std::cout << "gNB has added UE#" + std::to_string(ueRegistery[ue->getID()]->ue->getID()) << std::endl;
     
 }
 
@@ -52,12 +49,7 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
 
     if(ueRegistery.count(recievedPacket->getSource())){
 
-            
-
         auto sourceUE = ueRegistery.find(recievedPacket->getSource());
-
-        //std::cout  << recievedPacket->print() << std::endl;
-        //std::cout << "gnb Recieving: " << recievedPacket->print() << std::endl;
 
         auto& retransmissionQueue = sourceUE->second->retransmissionQueue;
 
@@ -93,7 +85,7 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
             if (recievedPacket->getSequenceNum() == expectedSeq){   //got expected packet, send ACK, update the seq for that source
                 
                 sendPacket(this->getID(), recievedPacket->getSource(), recievedPacket->getSequenceNum(), PacketType::ACK, std::string("ACK packet# " + std::to_string(recievedPacket->getSequenceNum()) + " from " + std::to_string(recievedPacket->getSource()) + " to " +  std::to_string(recievedPacket->getDestination())), 1);
-                //include logger here
+
                 sourceUE->second->expectedULSeq++;   //increment expected counter
                 bufferCleanUp(recievedPacket->getSource());
                 
@@ -129,7 +121,6 @@ void gNB::recievePacket(std::unique_ptr<Packet> recievedPacket){   //this will c
 }
 
 void gNB::recievePacket(std::unique_ptr<GTPPacket> data){    //this will come from Core Netwwork, unwrap, send to destination UE (DL)    
-    //std::cout << "gnb Recieving: " << data->payload->print() << std::endl;
 
     Logger::getInstance().logPacketRecieved(this->getID(), data->payload->print());
 
@@ -141,6 +132,7 @@ void gNB::recievePacket(std::unique_ptr<GTPPacket> data){    //this will come fr
 void gNB::forwardToCore(std::unique_ptr<Packet> packetToForward){ 
 
     if (packetToForward->getPacketType() == PacketType::REGISTRATION_REQUEST){
+        
         //wrapping packet
         auto wrappedPacket = std::make_unique<GTPPacket>();
         wrappedPacket->TEID = ul_TEIDs[0];  //destination must be core network
@@ -148,7 +140,9 @@ void gNB::forwardToCore(std::unique_ptr<Packet> packetToForward){
         
         Logger::getInstance().logPacketSent(this->getID(), wrappedPacket->payload->print());
         coreNetwork->recievePacket(std::move(wrappedPacket));
+    
     } else {
+        
         //wrapping packet
         auto wrappedPacket = std::make_unique<GTPPacket>();
         wrappedPacket->TEID = ul_TEIDs[packetToForward->getSource()]; 
@@ -168,8 +162,6 @@ void gNB::establishConnectionToCore(CoreNetwork* cN){
 void gNB::sendPacket(int sourceID, int destID, int seq, PacketType pType, const std::string& data, int prio=0){   //used for ACK/NACK/SKIP related packets
 
     if (ueRegistery.count(destID)){
-
-        
 
         if (pType == PacketType::ACK){
             std::unique_ptr<Packet> packetToSend = Packet::createPacket(this->getID(), destID, seq, pType, data, prio);
@@ -203,6 +195,7 @@ void gNB::sendPacket(int destID, std::unique_ptr<Packet> packet){ //used for sen
             ueRegistery[destID]->retransmissionQueue[ueRegistery[destID]->nextDLSeq] = std::move(packetToStore);   
             
             Logger::getInstance().logPacketSent(this->getID(), packet->print());
+            
             //send packet to UE
             ueRegistery[destID]->ue->recievePacket(std::move(packet));
 
@@ -243,23 +236,4 @@ void gNB::bufferCleanUp(int sourceID){
         }
     
     }
-}
-
-void gNB::tester_addPacketToReQueue(int ue_id, int seq){
-
-    if(ueRegistery.count(ue_id)){
-
-        auto& ueContext = ueRegistery[ue_id];
-        ueContext->retransmissionQueue[seq] = std::move(std::make_unique<Packet>(1005, 1001, seq, PacketType::DATA, "queued packet #" + std::to_string(seq), 0));
-
-    }
-}
-
-void gNB::removeUE(int ueID){
-    
-    if (ueRegistery.count(ueID)){
-        ueRegistery[ueID]->ue = nullptr;
-        ueRegistery.erase(ueID);
-    }
-
 }

@@ -26,6 +26,7 @@ SRC_DIR := src
 BUILD_DIR := build
 INCLUDE_DIR := include
 BIN_DIR := bin
+OUTPUT_DIR := output
 
 # 4. Target executable name
 TARGET := $(BIN_DIR)/5G_simulator$(EXE_EXT)
@@ -51,6 +52,15 @@ $(BUILD_DIR):
 $(BIN_DIR):
 	@$(call mkdir_cmd, $(BIN_DIR))
 
+
+clean-logs:
+	@echo "Clearing log files in $(OUTPUT_DIR)..."
+ifeq ($(DETECTED_OS),Windows)
+	@if exist $(OUTPUT_DIR) del /q $(OUTPUT_DIR)\*
+else
+	@rm -rf $(OUTPUT_DIR)/*
+endif
+
 run: $(TARGET)
 	@echo "Running 5G simulator on $(DETECTED_OS)..."
 	@$(RUN_PREFIX)$(TARGET)
@@ -60,4 +70,4 @@ clean:
 	@$(call rm_cmd, $(BUILD_DIR))
 	@$(call rm_cmd, $(BIN_DIR))
 
-.PHONY: all clean rebuild run
+.PHONY: all clean rebuild run clean-logs

@@ -7,11 +7,7 @@
 #include "Node.h"
 #include "Utils.h"
 
-
-
-
 class gNB;
-class Tester;
 
 class UE : public Node {
     public:
@@ -20,10 +16,8 @@ class UE : public Node {
         void recievePacket(std::unique_ptr<Packet>);
         void turnOn(const std::vector<gNB*>&);
         void turnOff();
-        
-        void generateTraffic(int, const std::string&);
+        void generateTraffic(int);
         void moveUE(int, int, const std::vector<gNB*>&);
-        //void tester_addPacketToReQueue(int, int);
 
     private:
         
@@ -39,8 +33,6 @@ class UE : public Node {
         void setupRegistrationReq();
         void sendPacket(int, int, PacketType, const std::string&, int); //for ACK, NACK, SKIP
         void sendPacket(int, PacketType, const std::string&, int);  //just for sending DATA
-
-
         
 };
 

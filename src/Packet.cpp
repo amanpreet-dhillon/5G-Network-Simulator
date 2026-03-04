@@ -68,6 +68,7 @@ const std::string Packet::print() const{
         case PacketType::ACK: packType =  "ACK"; break;
         case PacketType::NACK: packType =  "NACK"; break;
         case PacketType::SKIP: packType =  "SKIP"; break;
+        case PacketType::MOBILITY: packType =  "MOBILITY"; break;
         
             
         default: packType =  "UNKNOWN"; break;

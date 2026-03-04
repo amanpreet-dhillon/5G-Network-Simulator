@@ -5,32 +5,12 @@
 #include <random>
 
 Utils::Utils(){
-
-    //currUE_ID = 1000;
-    //curr_gNB_ID = 5000;
-    //srand(time(0));    
-
 }
 
 Utils::~Utils(){
-
 }
-/*
-int Utils::generateID(const int type) { //move this to NetworkSimulator
-    if(type == 0){  //UE ID
-        UE_IDs.push_back(++currUE_ID);
-        return currUE_ID;
-    } else if (type == 1) { //gNB ID
-        gNB_IDs.push_back(++curr_gNB_ID);
-        return curr_gNB_ID;
-    }
 
-    return 0;
-    
-}
-*/
-
-std::pair<int,int> Utils::generateCoordinates(){    //Move this to NetworkSimulator
+std::pair<int,int> Utils::generateCoordinates(){
     int x {generateRandNum(-9,9)};
     int y {generateRandNum(-9,9)};
 
