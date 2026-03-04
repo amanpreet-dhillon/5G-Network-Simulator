@@ -177,6 +177,13 @@ void UE::sendPacket(int destinationID, int expectedSeq, PacketType packetType, c
             
             Logger::getInstance().logPacketSent(this->getID(), deRegistrationPacket->print());
             connected_gNB->recievePacket(std::move(deRegistrationPacket));
+
+        } else if (packetType == PacketType::MOBILITY){
+
+            std::unique_ptr<Packet> mobilityPacket = Packet::createPacket(this->getID(), CORE_NETWORK, 0, packetType, data, 1);   //destination 0 is the core network
+
+            Logger::getInstance().logPacketSent(this->getID(), mobilityPacket->print());
+            connected_gNB->recievePacket(std::move(mobilityPacket));
         }
     }
 }
@@ -245,4 +252,28 @@ void UE::generateTraffic(int destination, const std::string& data){
     if(active and generatePaket <= 7){  //can change to add variance to package sent rate
         sendPacket(destination, PacketType::DATA, std::string("This is a packet from UE ") + std::to_string(this->getID()) + std::string(" to ") + std::to_string(destination), 0);
     }
+}
+
+void UE::moveUE(int newX, int newY, const std::vector<gNB*>& gnbs){
+    
+    //update location of this UE
+    this->updateLocation(newX, newY);
+
+    int old_gNB {connected_gNB->getID()};
+
+    //connect to closest gNB
+    float currDistance = std::numeric_limits<float>::max();
+    for (gNB* tower : gnbs){ //when UE turns on, find closest gNB
+        if (util.calculateDistance(*this, *tower) < currDistance){
+            currDistance = util.calculateDistance(*this, *tower);
+            connected_gNB = tower;
+        }
+    }
+
+    if (connected_gNB->getID() != old_gNB){ //change in gnb
+        std::string info = std::to_string(this->getID()) + "," + std::to_string(this->getLocation().first) + "," + std::to_string(this->getLocation().second) + "," + std::to_string(connected_gNB->getID());
+        sendPacket(CORE_NETWORK, 0, PacketType::MOBILITY, info, 1);
+    } 
+
+   
 }

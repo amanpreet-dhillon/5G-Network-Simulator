@@ -22,6 +22,7 @@ class UE : public Node {
         void turnOff();
         
         void generateTraffic(int, const std::string&);
+        void moveUE(int, int, const std::vector<gNB*>&);
         //void tester_addPacketToReQueue(int, int);
 
     private:

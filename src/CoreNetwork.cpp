@@ -144,7 +144,13 @@ void CoreNetwork::recievePacket(std::unique_ptr<GTPPacket> packet){
             Logger::getInstance().logOther(0, logInfo);
             
             removeUE(packet->payload->getSource());
-            //std::cout << "DEREGESTERING UE# " << std::to_string(packet->payload->getSource()) << std::endl;
+            
+        } else if(packet->payload->getPacketType() == PacketType::MOBILITY){
+            auto new_gNBID = std::stoi(split(packet->payload->getData(), ',')[3]);
+            moveUE(packet->payload->getSource(), new_gNBID);
+
+            std::string logInfo = " UE " + std::to_string(packet->payload->getSource()) + " has moved, now connected to gNB " + std::to_string(new_gNBID);
+            Logger::getInstance().logOther(0, logInfo);
         }
 
     } else if (destination >= 1001 and destination <= 1999){ //destination is UE and exists in network
@@ -195,4 +201,15 @@ std::vector<std::string> CoreNetwork::split(const std::string& str, char delimit
     }
 
     return result;
+}
+
+void CoreNetwork::moveUE(int ueID, int new_gNBID){
+    
+    gNBRegistry[ue_gNb_connection[ueID]]->disconnectUE(ueID);    //disconnect UE from old gnb
+
+    gNBRegistry[new_gNBID]->connectUE(ueRegistry[ueID].get());
+    gNBRegistry[new_gNBID]->recieveUL_TEID(std::stoi(std::to_string(8888) + std::to_string(ueID)), ueID);
+
+    ue_gNb_connection[ueID] = new_gNBID;
+    
 }

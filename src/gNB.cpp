@@ -34,9 +34,17 @@ void gNB::connectUE(UE* ue){
 void gNB::disconnectUE(int ueID){
        
     if (ueRegistery.count(ueID)){
-        //coreNetwork->removeUE(ueID);
         ueRegistery[ueID]->ue = nullptr;
         ueRegistery.erase(ueID);
+        ul_TEIDs.erase(ueID);
+
+        for (auto pair = dl_TEIDs.begin(); pair != dl_TEIDs.end();){
+            if (pair->second == ueID){
+                pair = dl_TEIDs.erase(pair);
+            } else {
+                ++pair;
+            }
+        }
     }
 }
 
@@ -245,4 +253,13 @@ void gNB::tester_addPacketToReQueue(int ue_id, int seq){
         ueContext->retransmissionQueue[seq] = std::move(std::make_unique<Packet>(1005, 1001, seq, PacketType::DATA, "queued packet #" + std::to_string(seq), 0));
 
     }
+}
+
+void gNB::removeUE(int ueID){
+    
+    if (ueRegistery.count(ueID)){
+        ueRegistery[ueID]->ue = nullptr;
+        ueRegistery.erase(ueID);
+    }
+
 }
