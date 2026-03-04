@@ -7,7 +7,6 @@
 #include "Logger.h"
 
 CoreNetwork::CoreNetwork(){
-    //id = 0;
     ul_TEIDs[CORE_NETWORK] = CORE_NETWORK;
     ul_TEIDs[INTERNET] = INTERNET;
 }
@@ -63,19 +62,7 @@ void CoreNetwork::removeUE(int ueID) {
 void CoreNetwork::recievePacket(std::unique_ptr<GTPPacket> packet){
 
     //unwrap packet
-    //std::cout << "core network Recieving: " << packet->payload->print() << std::endl;
-
     int destination {packet->payload->getDestination()};
-
-    // if (std::to_string(packet->TEID).length() == 5){
-    //     destination = CORE_NETWORK;
-    // } else if (std::stoi(std::to_string(packet->TEID).substr(4)) == 9999){
-    //     destination = INTERNET;
-    // } else {
-    //     destination = );
-    // }
-
-    
 
     if(destination == INTERNET and packet->payload->getPacketType() == PacketType::DATA){   //Packet should be data related
         
@@ -115,7 +102,6 @@ void CoreNetwork::recievePacket(std::unique_ptr<GTPPacket> packet){
                 
                 //establish which gnb this UE is connected to
                 ue_gNb_connection[packet->payload->getSource()] = std::stoi(std::to_string(packet->TEID).substr(0,4));   //first 4 characters of TEID is the gnb ID
-                //ue_gNb_connection[dl_TEIDs[packet->payload->getSource()]] = std::stoi(std::to_string(packet->TEID).substr(0,4));
 
                 //AMF sends the connected gnb the UL TEID of this UE
                 gNBRegistry[ue_gNb_connection[packet->payload->getSource()]]->recieveUL_TEID(std::stoi(std::to_string(8888) + std::to_string(packet->payload->getSource())), packet->payload->getSource()); //send gnb the UL TEID for this UE
@@ -127,7 +113,6 @@ void CoreNetwork::recievePacket(std::unique_ptr<GTPPacket> packet){
                 forwardPacketToUE(packet->payload->getSource(), std::move(packetToSend));
 
             } else {
-                // Log that source could not be registered because it is not valid
                 std::string logInfo = "This equipment could not be registered";
                 Logger::getInstance().logOther(0, logInfo);
             }
@@ -154,7 +139,6 @@ void CoreNetwork::recievePacket(std::unique_ptr<GTPPacket> packet){
         }
 
     } else if (destination >= 1001 and destination <= 1999){ //destination is UE and exists in network
-        //log other
         std::string logInfo = " has recieved a packet from " + std::to_string(packet->payload->getSource()) + " to " + std::to_string(packet->payload->getSource()) + ". Beginning handover process.\n";
         Logger::getInstance().logOther(0, logInfo);
 
@@ -172,7 +156,6 @@ void CoreNetwork::forwardPacketToUE(int destination, std::unique_ptr<Packet> pac
         wrappedPacket->payload = std::move(packet);
 
         //use DL TEID of destination to find connected gNB
-        
         Logger::getInstance().logPacketSent(0, wrappedPacket->payload->print());
         gNBRegistry[ue_gNb_connection[destination]]->recievePacket(std::move(wrappedPacket));    
     }

@@ -11,7 +11,6 @@ class NetworkSimulator {
     public:
         NetworkSimulator();
         ~NetworkSimulator();
-        
         void startSimulation(int);
         void endSimulation();
 
@@ -29,7 +28,6 @@ class NetworkSimulator {
         void turnOnUEs();
         void turnOffUEs();
         void setupSimulation();
-        void setupGrid();
         void displayGrid();
 
         int currgNBID = 5000;

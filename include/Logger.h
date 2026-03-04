@@ -12,7 +12,6 @@ class Logger{
         static Logger& getInstance();
         Logger(const Logger&) = delete; //prevent copying instance of Logger
         void operator=(const Logger&) = delete; //disable = operator, preventing overwriting 
-        
         void logPacketSent(int, const std::string&);
         void logPacketRecieved(int, const std::string&);
         void logOther(int, const std::string&);

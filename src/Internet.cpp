@@ -7,7 +7,7 @@
 Internet::Internet(){
 
     //outputFile.open("./output/Data_from_UEs.txt", std::ios::app); //for appending
-    outputFile.open("./output/Data_from_UEs.txt");
+    //outputFile.open("./output/Data_from_UEs.txt");    //uncomment if need to see data from UEs sent to Internet
     inputFile.open("./input/Internet.txt");
 
     if(!inputFile.is_open()){
